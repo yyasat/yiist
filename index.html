@@ -22,7 +22,7 @@
             padding: 20px;
         }
         
-        /* 主应用容器 - 移除手机边框 */
+        /* 主应用容器 */
         .app-container {
             width: 100%;
             max-width: 400px;
@@ -53,9 +53,123 @@
             font-weight: 600;
         }
         
-        .status-icons i {
-            margin-left: 8px;
-            color: #666;
+        .status-icons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .signal-icon {
+            width: 18px;
+            height: 12px;
+            position: relative;
+        }
+        
+        .signal-bar {
+            position: absolute;
+            bottom: 0;
+            width: 3px;
+            background: #333;
+            border-radius: 1px;
+        }
+        
+        .signal-bar:nth-child(1) {
+            left: 0;
+            height: 4px;
+        }
+        
+        .signal-bar:nth-child(2) {
+            left: 4px;
+            height: 6px;
+        }
+        
+        .signal-bar:nth-child(3) {
+            left: 8px;
+            height: 8px;
+        }
+        
+        .signal-bar:nth-child(4) {
+            left: 12px;
+            height: 10px;
+        }
+        
+        .signal-bar:nth-child(5) {
+            left: 16px;
+            height: 12px;
+        }
+        
+        .wifi-icon {
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+        
+        .wifi-circle {
+            position: absolute;
+            border: 2px solid #333;
+            border-radius: 50%;
+            border-top-color: transparent;
+            border-left-color: transparent;
+            border-right-color: transparent;
+        }
+        
+        .wifi-circle:nth-child(1) {
+            width: 16px;
+            height: 16px;
+            top: 0;
+            left: 0;
+        }
+        
+        .wifi-circle:nth-child(2) {
+            width: 10px;
+            height: 10px;
+            top: 3px;
+            left: 3px;
+        }
+        
+        .wifi-circle:nth-child(3) {
+            width: 4px;
+            height: 4px;
+            top: 6px;
+            left: 6px;
+            border: 2px solid #333;
+            border-radius: 50%;
+        }
+        
+        .battery-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .battery-icon {
+            width: 24px;
+            height: 12px;
+            border: 1px solid #333;
+            border-radius: 2px;
+            position: relative;
+        }
+        
+        .battery-level {
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            height: 8px;
+            background: #333;
+            border-radius: 1px;
+            transition: width 0.3s;
+        }
+        
+        .battery-tip {
+            width: 2px;
+            height: 4px;
+            background: #333;
+            border-radius: 0 1px 1px 0;
+        }
+        
+        .battery-percent {
+            font-size: 12px;
+            font-weight: 600;
         }
         
         /* 底部导航栏 */
@@ -108,7 +222,7 @@
         
         /* 主内容区域 */
         .main-content {
-            height: calc(100% - 104px); /* 减去状态栏和标签栏高度 */
+            height: calc(100% - 104px);
             overflow-y: auto;
             position: relative;
         }
@@ -128,13 +242,35 @@
             padding: 15px 20px;
             background: #ffffff;
             border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
         }
         
         .chat-title {
             font-size: 18px;
             font-weight: 600;
             color: #333;
-            text-align: center;
+        }
+        
+        .add-role-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #07c160;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s;
+        }
+        
+        .add-role-icon-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         }
         
         .chat-list {
@@ -195,6 +331,18 @@
             color: #999;
         }
         
+        .no-contacts {
+            text-align: center;
+            padding: 50px 20px;
+            color: #999;
+        }
+        
+        .no-contacts-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #e0e0e0;
+        }
+        
         /* 动态界面 */
         .moments-section {
             height: 100%;
@@ -215,7 +363,7 @@
         
         .cover-background {
             height: 180px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f0f0;
             position: relative;
             overflow: hidden;
         }
@@ -293,6 +441,7 @@
             font-size: 14px;
             color: #666;
             padding: 0 20px;
+            cursor: pointer;
         }
         
         .moments-list {
@@ -428,6 +577,7 @@
             font-size: 14px;
             color: #666;
             margin-bottom: 15px;
+            cursor: pointer;
         }
         
         .profile-status {
@@ -941,9 +1091,25 @@
         <div class="status-bar">
             <div class="time" id="currentTime">09:41</div>
             <div class="status-icons">
-                <i class="fas fa-signal"></i>
-                <i class="fas fa-wifi"></i>
-                <i class="fas fa-battery-three-quarters"></i>
+                <div class="signal-icon" id="signalIcon">
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                    <div class="signal-bar"></div>
+                </div>
+                <div class="wifi-icon" id="wifiIcon">
+                    <div class="wifi-circle"></div>
+                    <div class="wifi-circle"></div>
+                    <div class="wifi-circle"></div>
+                </div>
+                <div class="battery-container" id="batteryContainer">
+                    <div class="battery-icon">
+                        <div class="battery-level" id="batteryLevel"></div>
+                    </div>
+                    <div class="battery-tip"></div>
+                    <div class="battery-percent" id="batteryPercent">100%</div>
+                </div>
             </div>
         </div>
         
@@ -952,7 +1118,10 @@
             <!-- 聊天界面 -->
             <div class="chat-section active" id="chatSection">
                 <div class="chat-header">
-                    <div class="chat-title">AI聊天</div>
+                    <div class="chat-title">联系人</div>
+                    <button class="add-role-icon-btn" id="addRoleIconBtn">
+                        <i class="fas fa-plus"></i>
+                    </button>
                 </div>
                 <div class="chat-list" id="chatList">
                     <!-- 聊天列表项会由JavaScript动态生成 -->
@@ -975,7 +1144,7 @@
                             </div>
                         </div>
                         <div class="user-name" id="userName">AI助手用户</div>
-                        <div class="user-bio" id="userBio">这个人很懒，什么都没留下...</div>
+                        <div class="user-bio" id="userBio">点击编辑个性签名</div>
                     </div>
                 </div>
                 <div class="moments-list" id="momentsList">
@@ -994,7 +1163,7 @@
                     </div>
                     <div class="profile-info">
                         <div class="profile-name" id="profileName">AI助手用户</div>
-                        <div class="profile-id" id="profileId">ID: user_001</div>
+                        <div class="profile-id" id="profileId">点击设置ID</div>
                         <span class="profile-status">在线</span>
                     </div>
                     <button class="add-role-btn" id="addRoleBtn">
@@ -1170,7 +1339,7 @@
         let editingRoleId = null;
         let roles = JSON.parse(localStorage.getItem('ai_roles') || '[]');
         let moments = JSON.parse(localStorage.getItem('ai_moments') || '[]');
-        let userInfo = JSON.parse(localStorage.getItem('ai_user_info') || '{"name": "AI助手用户", "bio": "这个人很懒，什么都没留下...", "avatar": ""}');
+        let userInfo = JSON.parse(localStorage.getItem('ai_user_info') || '{"name": "AI助手用户", "bio": "点击编辑个性签名", "avatar": "", "userId": ""}');
         let chatHistories = JSON.parse(localStorage.getItem('ai_chat_histories') || '{}');
         
         // DOM元素
@@ -1233,12 +1402,176 @@
             document.getElementById('currentTime').textContent = timeString;
         }
         
+        // 更新电池状态
+        function updateBatteryStatus() {
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    updateBatteryInfo(battery);
+                    
+                    battery.addEventListener('levelchange', () => {
+                        updateBatteryInfo(battery);
+                    });
+                    
+                    battery.addEventListener('chargingchange', () => {
+                        updateBatteryInfo(battery);
+                    });
+                });
+            } else {
+                // 如果浏览器不支持Battery API，使用模拟数据
+                simulateBatteryStatus();
+            }
+        }
+        
+        function updateBatteryInfo(battery) {
+            const batteryLevel = document.getElementById('batteryLevel');
+            const batteryPercent = document.getElementById('batteryPercent');
+            
+            const level = battery.level * 100;
+            const width = (level * 20) / 100; // 电池图标宽度为20px
+            
+            batteryLevel.style.width = width + 'px';
+            batteryPercent.textContent = Math.round(level) + '%';
+            
+            // 根据电量改变颜色
+            if (level <= 20) {
+                batteryLevel.style.background = '#f5222d';
+            } else if (level <= 50) {
+                batteryLevel.style.background = '#fa8c16';
+            } else {
+                batteryLevel.style.background = '#52c41a';
+            }
+            
+            // 充电状态
+            if (battery.charging) {
+                batteryLevel.style.background = '#1890ff';
+            }
+        }
+        
+        function simulateBatteryStatus() {
+            let level = 85; // 模拟85%电量
+            const batteryLevel = document.getElementById('batteryLevel');
+            const batteryPercent = document.getElementById('batteryPercent');
+            
+            const update = () => {
+                level -= 0.1; // 每分钟减少0.1%
+                if (level < 0) level = 100; // 重置到100%
+                
+                const width = (level * 20) / 100;
+                batteryLevel.style.width = width + 'px';
+                batteryPercent.textContent = Math.round(level) + '%';
+                
+                // 根据电量改变颜色
+                if (level <= 20) {
+                    batteryLevel.style.background = '#f5222d';
+                } else if (level <= 50) {
+                    batteryLevel.style.background = '#fa8c16';
+                } else {
+                    batteryLevel.style.background = '#52c41a';
+                }
+            };
+            
+            update();
+            setInterval(update, 60000); // 每分钟更新一次
+        }
+        
+        // 更新网络信号
+        function updateNetworkStatus() {
+            if (navigator.connection) {
+                const connection = navigator.connection;
+                updateSignalAndWifi(connection);
+                
+                connection.addEventListener('change', () => {
+                    updateSignalAndWifi(connection);
+                });
+            } else {
+                // 如果浏览器不支持Network Information API，使用模拟数据
+                simulateNetworkStatus();
+            }
+        }
+        
+        function updateSignalAndWifi(connection) {
+            const signalBars = document.querySelectorAll('.signal-bar');
+            const wifiCircles = document.querySelectorAll('.wifi-circle');
+            
+            // 信号强度
+            let signalStrength = 4; // 默认满格
+            
+            if (connection.effectiveType === 'slow-2g') {
+                signalStrength = 1;
+            } else if (connection.effectiveType === '2g') {
+                signalStrength = 2;
+            } else if (connection.effectiveType === '3g') {
+                signalStrength = 3;
+            } else if (connection.effectiveType === '4g') {
+                signalStrength = 4;
+            }
+            
+            // 更新信号条
+            signalBars.forEach((bar, index) => {
+                if (index < signalStrength) {
+                    bar.style.background = '#333';
+                } else {
+                    bar.style.background = '#ccc';
+                }
+            });
+            
+            // WiFi信号
+            let wifiStrength = 3; // 默认满格
+            
+            if (connection.downlink < 1) {
+                wifiStrength = 1;
+            } else if (connection.downlink < 5) {
+                wifiStrength = 2;
+            }
+            
+            // 更新WiFi图标
+            wifiCircles.forEach((circle, index) => {
+                if (index < wifiStrength) {
+                    circle.style.borderColor = '#333';
+                } else {
+                    circle.style.borderColor = '#ccc';
+                }
+            });
+        }
+        
+        function simulateNetworkStatus() {
+            const signalBars = document.querySelectorAll('.signal-bar');
+            const wifiCircles = document.querySelectorAll('.wifi-circle');
+            
+            // 模拟信号强度（随机变化）
+            const update = () => {
+                const signalStrength = Math.floor(Math.random() * 3) + 2; // 2-4格
+                const wifiStrength = Math.floor(Math.random() * 2) + 2; // 2-3格
+                
+                // 更新信号条
+                signalBars.forEach((bar, index) => {
+                    if (index < signalStrength) {
+                        bar.style.background = '#333';
+                    } else {
+                        bar.style.background = '#ccc';
+                    }
+                });
+                
+                // 更新WiFi图标
+                wifiCircles.forEach((circle, index) => {
+                    if (index < wifiStrength) {
+                        circle.style.borderColor = '#333';
+                    } else {
+                        circle.style.borderColor = '#ccc';
+                    }
+                });
+            };
+            
+            update();
+            setInterval(update, 10000); // 每10秒更新一次
+        }
+        
         // 加载用户信息
         function loadUserInfo() {
             document.getElementById('userName').textContent = userInfo.name;
             document.getElementById('userBio').textContent = userInfo.bio;
             document.getElementById('profileName').textContent = userInfo.name;
-            document.getElementById('profileId').textContent = `ID: ${userInfo.id || 'user_' + Math.floor(Math.random() * 1000)}`;
+            document.getElementById('profileId').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : '点击设置ID';
             
             // 加载头像
             const userAvatar = document.getElementById('userAvatar');
@@ -1256,6 +1589,12 @@
                 userAvatarContainer.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#fff;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);">${avatarText}</div>`;
                 profileAvatarContainer.innerHTML = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:bold;color:#fff;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);">${avatarText}</div>`;
             }
+            
+            // 加载封面背景
+            const coverBackground = document.getElementById('coverBackground');
+            if (userInfo.coverBackground) {
+                coverBackground.style.background = userInfo.coverBackground;
+            }
         }
         
         // 加载聊天列表
@@ -1264,10 +1603,12 @@
             
             if (roles.length === 0) {
                 chatList.innerHTML = `
-                    <div style="text-align:center;padding:50px 20px;color:#999;">
-                        <i class="fas fa-robot" style="font-size:48px;margin-bottom:20px;color:#e0e0e0;"></i>
-                        <div>还没有AI角色</div>
-                        <div style="font-size:14px;margin-top:10px;">请先在"个人"页面中添加角色</div>
+                    <div class="no-contacts">
+                        <div class="no-contacts-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>暂无联系人</div>
+                        <div style="font-size:14px;margin-top:10px;">点击右上角添加按钮创建AI角色</div>
                     </div>
                 `;
                 return;
@@ -1392,6 +1733,11 @@
         }
         
         // 打开角色管理器
+        document.getElementById('addRoleIconBtn').addEventListener('click', () => {
+            document.getElementById('roleManagerSection').classList.add('active');
+            loadRoleList();
+        });
+        
         document.getElementById('addRoleBtn').addEventListener('click', () => {
             document.getElementById('roleManagerSection').classList.add('active');
             loadRoleList();
@@ -1594,7 +1940,7 @@
                 const welcomeMessage = document.createElement('div');
                 welcomeMessage.className = 'message ai';
                 welcomeMessage.innerHTML = `
-                    <div class="message-content">
+                    <div class="message-content" style="background:${role?.bubbleColor || '#07c160'}">
                         你好！我是${role.name}。${role.personality ? role.personality.substring(0, 100) + (role.personality.length > 100 ? '...' : '') : '很高兴为你服务！'}
                     </div>
                 `;
@@ -1732,20 +2078,72 @@
         
         // 编辑封面
         document.getElementById('editCoverBtn').addEventListener('click', () => {
-            const colors = ['#667eea', '#764ba2', '#07c160', '#1890ff', '#f5222d', '#fa8c16'];
+            const colors = [
+                'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                'linear-gradient(135deg, #07c160 0%, #06ad56 100%)',
+                'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
+                'linear-gradient(135deg, #f5222d 0%, #cf1322 100%)',
+                'linear-gradient(135deg, #fa8c16 0%, #d46b08 100%)',
+                'linear-gradient(135deg, #722ed1 0%, #531dab 100%)'
+            ];
             const randomColor = colors[Math.floor(Math.random() * colors.length)];
-            document.getElementById('coverBackground').style.background = `linear-gradient(135deg, ${randomColor} 0%, ${adjustColor(randomColor, -20)} 100%)`;
+            document.getElementById('coverBackground').style.background = randomColor;
+            userInfo.coverBackground = randomColor;
+            localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             showNotification('封面已更新');
         });
         
         // 编辑头像
         document.getElementById('editAvatarBtn').addEventListener('click', () => {
-            const newName = prompt('请输入你的新名称：', userInfo.name);
-            if (newName && newName.trim()) {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = 'image/*';
+            fileInput.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        userInfo.avatar = e.target.result;
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                        loadUserInfo();
+                        showNotification('头像已更新');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            fileInput.click();
+        });
+        
+        // 编辑个性签名
+        document.getElementById('userBio').addEventListener('click', () => {
+            const newBio = prompt('请输入个性签名：', userInfo.bio);
+            if (newBio !== null) {
+                userInfo.bio = newBio.trim();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                loadUserInfo();
+                showNotification('个性签名已更新');
+            }
+        });
+        
+        // 编辑用户ID
+        document.getElementById('profileId').addEventListener('click', () => {
+            const newId = prompt('请输入用户ID：', userInfo.userId || '');
+            if (newId !== null) {
+                userInfo.userId = newId.trim();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                loadUserInfo();
+                showNotification('用户ID已更新');
+            }
+        });
+        
+        // 编辑用户名
+        document.getElementById('profileName').addEventListener('click', () => {
+            const newName = prompt('请输入用户名：', userInfo.name);
+            if (newName !== null && newName.trim()) {
                 userInfo.name = newName.trim();
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                 loadUserInfo();
-                showNotification('名称已更新');
+                showNotification('用户名已更新');
             }
         });
         
@@ -1768,80 +2166,18 @@
             }
         }
         
-        function adjustColor(color, amount) {
-            const hex = color.replace('#', '');
-            const num = parseInt(hex, 16);
-            let r = (num >> 16) + amount;
-            let g = ((num >> 8) & 0x00FF) + amount;
-            let b = (num & 0x0000FF) + amount;
-            
-            r = Math.min(Math.max(0, r), 255);
-            g = Math.min(Math.max(0, g), 255);
-            b = Math.min(Math.max(0, b), 255);
-            
-            return `#${(b | (g << 8) | (r << 16)).toString(16).padStart(6, '0')}`;
-        }
-        
         // 初始化
         document.addEventListener('DOMContentLoaded', () => {
             updateTime();
             setInterval(updateTime, 1000);
             
+            updateBatteryStatus();
+            updateNetworkStatus();
+            
             loadUserInfo();
             loadChatList();
             loadMoments();
             loadProfile();
-            
-            // 如果没有角色，创建几个示例角色
-            if (roles.length === 0) {
-                roles = [
-                    {
-                        id: 'role_1',
-                        name: 'AI助手',
-                        bio: '智能对话助手',
-                        notes: '默认助手',
-                        personality: '我是一个友好且乐于助人的AI助手，擅长回答各种问题，提供有用的建议和支持。',
-                        bubbleColor: '#07c160',
-                        chatBgColor: '#f5f5f5',
-                        createdAt: Date.now(),
-                        updatedAt: Date.now()
-                    },
-                    {
-                        id: 'role_2',
-                        name: '编程导师',
-                        bio: '编程学习助手',
-                        notes: '用于学习编程',
-                        personality: '我是一个经验丰富的编程导师，擅长解释复杂的技术概念，提供代码示例和最佳实践建议。',
-                        bubbleColor: '#1890ff',
-                        chatBgColor: '#f0f9ff',
-                        createdAt: Date.now(),
-                        updatedAt: Date.now()
-                    }
-                ];
-                localStorage.setItem('ai_roles', JSON.stringify(roles));
-                loadChatList();
-            }
-            
-            // 如果没有动态，创建示例动态
-            if (moments.length === 0) {
-                moments = [
-                    {
-                        id: 'moment_1',
-                        author: 'AI助手用户',
-                        content: '今天开始使用AI助手，感觉很棒！',
-                        timestamp: Date.now() - 3600000,
-                        avatarColor: '#07c160'
-                    },
-                    {
-                        id: 'moment_2',
-                        author: 'AI助手用户',
-                        content: '创建了我的第一个AI角色，可以自定义对话风格了！',
-                        timestamp: Date.now() - 86400000,
-                        avatarColor: '#07c160'
-                    }
-                ];
-                localStorage.setItem('ai_moments', JSON.stringify(moments));
-            }
         });
     </script>
 </body>
