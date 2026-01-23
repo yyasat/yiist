@@ -25,9 +25,6 @@
             display: flex;
             flex-direction: column;
             background: white;
-            max-width: 100%;
-            margin: 0;
-            border-radius: 0;
         }
         
         .status-bar {
@@ -95,7 +92,6 @@
             background: #52c41a;
             border-radius: 1px;
             width: 85%;
-            transition: width 0.3s;
         }
         
         .battery-tip {
@@ -103,12 +99,6 @@
             height: 4px;
             background: #333;
             border-radius: 0 1px 1px 0;
-        }
-        
-        .battery-percent {
-            font-size: 12px;
-            font-weight: 600;
-            color: #333;
         }
         
         .main-content {
@@ -368,49 +358,107 @@
             box-shadow: 0 8px 25px rgba(7, 193, 96, 0.4);
         }
         
-        /* 个人页面样式 */
+        /* 个人页面样式 - 重新设计 */
         .profile-header {
-            background: white;
-            padding: 40px 20px 30px;
+            height: 250px;
             position: relative;
-            border-bottom: 1px solid #eee;
-            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
-        .profile-avatar {
+        .profile-cover {
+            height: 100%;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .profile-edit-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+        
+        .profile-edit-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-2px);
+        }
+        
+        .profile-info-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding-bottom: 30px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
+        }
+        
+        .profile-avatar-container {
             width: 100px;
             height: 100px;
             border-radius: 50%;
             border: 4px solid white;
-            position: absolute;
-            top: -50px;
-            left: 30px;
-            background: #eee;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            margin: 0 auto 15px;
+            background: #eee;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         
-        .profile-avatar img {
+        .profile-avatar {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
         
-        .profile-info {
-            margin-left: 130px;
+        .profile-avatar-edit-btn {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 36px;
+            height: 36px;
+            background: #07c160;
+            color: white;
+            border-radius: 50%;
+            border: 3px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
         }
         
-        .profile-name {
+        .profile-avatar-edit-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
+        }
+        
+        .profile-name-display {
             font-size: 24px;
             font-weight: 600;
-            color: #333;
+            color: white;
             margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
-        .profile-id {
+        .profile-id-display {
             font-size: 16px;
-            color: #666;
-            margin-bottom: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0 30px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .profile-menu {
@@ -778,7 +826,6 @@
                         <div class="battery-level" id="batteryLevel"></div>
                     </div>
                     <div class="battery-tip"></div>
-                    <div class="battery-percent" id="batteryPercent">85%</div>
                 </div>
             </div>
         </div>
@@ -841,15 +888,24 @@
                 </button>
             </div>
             
-            <!-- 个人页面 -->
+            <!-- 个人页面 - 重新设计 -->
             <div class="page" id="profilePage">
                 <div class="profile-header">
-                    <div class="profile-avatar">
-                        <img src="" alt="" id="profileAvatarImg">
-                    </div>
-                    <div class="profile-info">
-                        <div class="profile-name" id="profileName">用户</div>
-                        <div class="profile-id" id="profileId">ID: 点击设置</div>
+                    <div class="profile-cover" id="profileCover">
+                        <button class="profile-edit-btn" id="editProfileCoverBtn">
+                            <i class="fas fa-camera"></i>
+                            <span>编辑封面</span>
+                        </button>
+                        <div class="profile-info-area">
+                            <div class="profile-avatar-container">
+                                <img src="" alt="" class="profile-avatar" id="profileAvatar">
+                                <button class="profile-avatar-edit-btn" id="editProfileAvatarBtn">
+                                    <i class="fas fa-camera"></i>
+                                </button>
+                            </div>
+                            <div class="profile-name-display" id="profileNameDisplay">用户</div>
+                            <div class="profile-id-display" id="profileIdDisplay">ID: 点击设置</div>
+                        </div>
                     </div>
                 </div>
                 <div class="profile-menu">
@@ -965,14 +1021,10 @@
         let chatHistories = JSON.parse(localStorage.getItem('ai_chat_histories')) || {};
         let currentRoleId = null;
         let editingRoleId = null;
-        let batteryLevel = 85;
-        let batteryInterval;
         
         // 初始化函数
         function init() {
             updateTime();
-            updateBatteryDisplay();
-            startBatterySimulation();
             loadUserInfo();
             loadChatList();
             loadMoments();
@@ -980,6 +1032,9 @@
             
             // 每分钟更新时间
             setInterval(updateTime, 1000);
+            
+            // 获取真实手机电量
+            getRealBatteryStatus();
         }
         
         // 更新时间
@@ -990,39 +1045,53 @@
             document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
         }
         
-        // 更新电量显示
-        function updateBatteryDisplay() {
-            const batteryLevelElement = document.getElementById('batteryLevel');
-            const batteryPercentElement = document.getElementById('batteryPercent');
-            
-            batteryLevelElement.style.width = `${batteryLevel}%`;
-            batteryPercentElement.textContent = `${batteryLevel}%`;
-            
-            // 根据电量改变颜色
-            if (batteryLevel <= 20) {
-                batteryLevelElement.style.background = '#f5222d'; // 红色
-            } else if (batteryLevel <= 50) {
-                batteryLevelElement.style.background = '#fa8c16'; // 橙色
+        // 获取真实手机电量
+        function getRealBatteryStatus() {
+            if (navigator.getBattery) {
+                navigator.getBattery().then(battery => {
+                    updateBatteryDisplay(battery);
+                    
+                    // 监听电量变化
+                    battery.addEventListener('levelchange', () => {
+                        updateBatteryDisplay(battery);
+                    });
+                    
+                    battery.addEventListener('chargingchange', () => {
+                        updateBatteryDisplay(battery);
+                    });
+                }).catch(error => {
+                    console.log('无法获取电池信息:', error);
+                    setDefaultBattery();
+                });
             } else {
-                batteryLevelElement.style.background = '#52c41a'; // 绿色
+                setDefaultBattery();
             }
         }
         
-        // 模拟电量变化
-        function startBatterySimulation() {
-            if (batteryInterval) clearInterval(batteryInterval);
+        // 更新电量显示
+        function updateBatteryDisplay(battery) {
+            const batteryLevel = document.getElementById('batteryLevel');
+            const level = Math.floor(battery.level * 100);
             
-            batteryInterval = setInterval(() => {
-                // 模拟电量缓慢下降
-                if (batteryLevel > 0) {
-                    batteryLevel -= 0.1; // 每分钟下降0.1%
-                    if (batteryLevel < 0) batteryLevel = 0;
-                } else {
-                    // 电量耗尽后重置到100%
-                    batteryLevel = 100;
-                }
-                updateBatteryDisplay();
-            }, 60000); // 每分钟更新一次
+            batteryLevel.style.width = `${level}%`;
+            
+            // 根据电量改变颜色
+            if (battery.charging) {
+                batteryLevel.style.background = '#1890ff'; // 充电时显示蓝色
+            } else if (level <= 20) {
+                batteryLevel.style.background = '#f5222d'; // 红色
+            } else if (level <= 50) {
+                batteryLevel.style.background = '#fa8c16'; // 橙色
+            } else {
+                batteryLevel.style.background = '#52c41a'; // 绿色
+            }
+        }
+        
+        // 设置默认电量（当无法获取真实电量时）
+        function setDefaultBattery() {
+            const batteryLevel = document.getElementById('batteryLevel');
+            batteryLevel.style.width = '85%';
+            batteryLevel.style.background = '#52c41a';
         }
         
         // 加载用户信息
@@ -1034,26 +1103,34 @@
                     bio: '点击编辑个性签名',
                     avatar: '',
                     coverBackground: '',
-                    userId: ''
+                    userId: '',
+                    profileCover: ''
                 };
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             }
             
-            // 更新UI
+            // 更新动态页面UI
             document.getElementById('userName').textContent = userInfo.name;
             document.getElementById('userBio').textContent = userInfo.bio;
-            document.getElementById('profileName').textContent = userInfo.name;
-            document.getElementById('profileId').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : 'ID: 点击设置';
             
-            // 设置封面背景
+            // 更新个人页面UI
+            document.getElementById('profileNameDisplay').textContent = userInfo.name;
+            document.getElementById('profileIdDisplay').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : 'ID: 点击设置';
+            
+            // 设置动态封面背景
             if (userInfo.coverBackground) {
                 document.getElementById('coverBackground').style.background = userInfo.coverBackground;
+            }
+            
+            // 设置个人封面背景
+            if (userInfo.profileCover) {
+                document.getElementById('profileCover').style.background = userInfo.profileCover;
             }
             
             // 设置头像
             if (userInfo.avatar) {
                 document.getElementById('userAvatar').src = userInfo.avatar;
-                document.getElementById('profileAvatarImg').src = userInfo.avatar;
+                document.getElementById('profileAvatar').src = userInfo.avatar;
             }
         }
         
@@ -1418,7 +1495,7 @@
                 showNotification('角色保存成功');
             });
             
-            // 编辑封面
+            // 编辑动态封面
             document.getElementById('editCoverBtn').addEventListener('click', () => {
                 uploadImage((imageData) => {
                     if (imageData) {
@@ -1430,8 +1507,32 @@
                 });
             });
             
-            // 编辑头像
+            // 编辑个人封面
+            document.getElementById('editProfileCoverBtn').addEventListener('click', () => {
+                uploadImage((imageData) => {
+                    if (imageData) {
+                        document.getElementById('profileCover').style.background = `url('${imageData}') center/cover no-repeat`;
+                        userInfo.profileCover = `url('${imageData}') center/cover no-repeat`;
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                        showNotification('个人封面已更新');
+                    }
+                });
+            });
+            
+            // 编辑动态头像
             document.getElementById('editAvatarBtn').addEventListener('click', () => {
+                uploadImage((imageData) => {
+                    if (imageData) {
+                        userInfo.avatar = imageData;
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                        loadUserInfo();
+                        showNotification('头像已更新');
+                    }
+                });
+            });
+            
+            // 编辑个人头像
+            document.getElementById('editProfileAvatarBtn').addEventListener('click', () => {
                 uploadImage((imageData) => {
                     if (imageData) {
                         userInfo.avatar = imageData;
@@ -1465,7 +1566,7 @@
             });
             
             // 编辑用户ID
-            document.getElementById('profileId').addEventListener('click', () => {
+            document.getElementById('profileIdDisplay').addEventListener('click', () => {
                 const newId = prompt('请输入用户ID：', userInfo.userId || '');
                 if (newId !== null) {
                     userInfo.userId = newId;
