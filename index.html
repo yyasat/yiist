@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI助手桌面</title>
+    <title>quq小手机</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -16,22 +16,18 @@
         body {
             background: #f0f2f5;
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            width: 100%;
         }
         
         .app-container {
             width: 100%;
-            max-width: 420px;
-            height: 800px;
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            background: white;
+            max-width: 100%;
+            margin: 0;
+            border-radius: 0;
         }
         
         .status-bar {
@@ -42,26 +38,28 @@
             align-items: center;
             padding: 0 20px;
             border-bottom: 1px solid #eee;
+            flex-shrink: 0;
         }
         
         .time {
             font-weight: 600;
             font-size: 14px;
+            color: #333;
         }
         
         .status-icons {
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
         
-        .signal-icon, .wifi-icon {
-            width: 18px;
+        .signal-icon {
+            width: 20px;
             height: 12px;
             position: relative;
         }
         
-        .signal-bar, .wifi-bar {
+        .signal-bar {
             position: absolute;
             bottom: 0;
             width: 3px;
@@ -96,7 +94,8 @@
             height: 8px;
             background: #52c41a;
             border-radius: 1px;
-            width: 80%;
+            width: 85%;
+            transition: width 0.3s;
         }
         
         .battery-tip {
@@ -115,7 +114,8 @@
         .main-content {
             flex: 1;
             overflow: hidden;
-            position: relative;
+            display: flex;
+            flex-direction: column;
         }
         
         .tab-bar {
@@ -123,6 +123,7 @@
             background: white;
             display: flex;
             border-top: 1px solid #eee;
+            flex-shrink: 0;
         }
         
         .tab-item {
@@ -147,6 +148,7 @@
             font-size: 22px;
             margin-bottom: 4px;
             color: #666;
+            transition: all 0.3s;
         }
         
         .tab-text {
@@ -155,20 +157,17 @@
         }
         
         .page {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #f5f5f5;
-            display: none;
+            flex: 1;
             overflow-y: auto;
+            display: none;
+            background: #f5f5f5;
         }
         
         .page.active {
             display: block;
         }
         
+        /* 聊天页面样式 */
         .chat-header {
             background: white;
             padding: 15px 20px;
@@ -196,50 +195,68 @@
             justify-content: center;
             cursor: pointer;
             font-size: 18px;
+            transition: all 0.3s;
+        }
+        
+        .add-role-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         }
         
         .chat-list {
-            padding: 10px;
+            padding: 15px;
         }
         
         .no-contacts {
             text-align: center;
-            padding: 60px 20px;
+            padding: 80px 20px;
             color: #999;
+            background: white;
+            border-radius: 12px;
+            margin: 20px;
         }
         
         .no-contacts-icon {
-            font-size: 48px;
+            font-size: 64px;
             margin-bottom: 20px;
             color: #e0e0e0;
         }
         
+        /* 动态页面样式 */
         .moments-header {
-            height: 280px;
+            height: 300px;
             position: relative;
-            background: #f0f0f0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
         
         .cover-background {
-            height: 180px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100%;
+            width: 100%;
             position: relative;
+            overflow: hidden;
         }
         
         .cover-edit-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            background: rgba(0,0,0,0.5);
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.5);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 15px;
-            font-size: 12px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s;
+        }
+        
+        .cover-edit-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-2px);
         }
         
         .user-info-area {
@@ -248,18 +265,20 @@
             left: 0;
             right: 0;
             text-align: center;
-            padding-bottom: 20px;
+            padding-bottom: 30px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
         }
         
         .user-avatar-container {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 4px solid white;
             overflow: hidden;
-            margin: 0 auto 10px;
+            margin: 0 auto 15px;
             background: #eee;
             position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
         
         .user-avatar {
@@ -270,82 +289,105 @@
         
         .avatar-edit-btn {
             position: absolute;
-            bottom: -4px;
-            right: -4px;
-            width: 28px;
-            height: 28px;
+            bottom: -5px;
+            right: -5px;
+            width: 36px;
+            height: 36px;
             background: #07c160;
             color: white;
             border-radius: 50%;
-            border: 2px solid white;
+            border: 3px solid white;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .avatar-edit-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         }
         
         .user-name {
-            font-size: 18px;
+            font-size: 24px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 5px;
+            color: white;
+            margin-bottom: 8px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .user-bio {
-            font-size: 14px;
-            color: #666;
-            padding: 0 20px;
+            font-size: 16px;
+            color: rgba(255, 255, 255, 0.9);
+            padding: 0 30px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
         
         .moments-list {
-            padding: 15px;
+            padding: 20px;
         }
         
         .no-moments {
             text-align: center;
-            padding: 50px 20px;
+            padding: 60px 20px;
             color: #999;
+            background: white;
+            border-radius: 12px;
         }
         
         .no-moments-icon {
-            font-size: 48px;
+            font-size: 64px;
             margin-bottom: 20px;
             color: #e0e0e0;
         }
         
         .add-moment-btn {
             position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 56px;
-            height: 56px;
+            bottom: 100px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
             background: #07c160;
             color: white;
             border: none;
             border-radius: 50%;
             font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(7,193,96,0.3);
+            box-shadow: 0 6px 20px rgba(7, 193, 96, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: all 0.3s;
         }
         
+        .add-moment-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(7, 193, 96, 0.4);
+        }
+        
+        /* 个人页面样式 */
         .profile-header {
             background: white;
-            padding: 30px 20px 20px;
+            padding: 40px 20px 30px;
             position: relative;
             border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
         }
         
         .profile-avatar {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             border: 4px solid white;
             position: absolute;
-            top: -40px;
-            left: 20px;
+            top: -50px;
+            left: 30px;
             background: #eee;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
         
         .profile-avatar img {
@@ -355,20 +397,20 @@
         }
         
         .profile-info {
-            margin-left: 100px;
+            margin-left: 130px;
         }
         
         .profile-name {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: 600;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
         
         .profile-id {
-            font-size: 14px;
+            font-size: 16px;
             color: #666;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         
         .profile-menu {
@@ -376,14 +418,20 @@
             background: white;
             border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
         }
         
         .menu-item {
             display: flex;
             align-items: center;
-            padding: 15px;
+            padding: 18px 20px;
             border-bottom: 1px solid #f5f5f5;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .menu-item:hover {
+            background: #f9f9f9;
         }
         
         .menu-item:last-child {
@@ -391,92 +439,100 @@
         }
         
         .menu-icon {
-            width: 24px;
-            height: 24px;
+            width: 32px;
+            height: 32px;
             background: #f0f9ff;
-            border-radius: 6px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 12px;
+            margin-right: 15px;
             color: #1890ff;
+            font-size: 16px;
         }
         
         .menu-text {
             flex: 1;
             color: #333;
-            font-size: 15px;
+            font-size: 16px;
+            font-weight: 500;
         }
         
-        .role-manager {
+        /* 弹窗样式 */
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: white;
-            z-index: 1000;
+            background: rgba(0, 0, 0, 0.5);
             display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
         }
         
-        .role-manager.active {
-            display: block;
+        .modal.active {
+            display: flex;
         }
         
-        .role-manager-header {
-            padding: 15px 20px;
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            padding: 20px;
             border-bottom: 1px solid #eee;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
         
-        .role-list {
-            padding: 20px;
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
         }
         
-        .add-role-card {
-            background: #f8f9fa;
-            border: 2px dashed #ccc;
-            border-radius: 12px;
-            padding: 30px 20px;
-            text-align: center;
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #999;
             cursor: pointer;
-            color: #666;
+            padding: 5px;
         }
         
-        .role-editor {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 1001;
-            display: none;
-            overflow-y: auto;
-        }
-        
-        .role-editor.active {
-            display: block;
-        }
-        
-        .editor-content {
+        .modal-body {
             padding: 20px;
         }
         
-        .form-group {
-            margin-bottom: 20px;
+        /* 通知样式 */
+        .notification {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+            z-index: 1001;
+            transition: transform 0.4s;
+            border-left: 4px solid #07c160;
         }
         
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
         }
         
+        /* 聊天对话框样式 */
         .chat-dialog {
             position: fixed;
             top: 0;
@@ -501,6 +557,23 @@
             align-items: center;
         }
         
+        .dialog-back {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #333;
+            margin-right: 15px;
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .dialog-title {
+            flex: 1;
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+        }
+        
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -511,6 +584,12 @@
         .message {
             margin-bottom: 15px;
             display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .message.user {
@@ -519,9 +598,12 @@
         
         .message-content {
             max-width: 70%;
-            padding: 12px 15px;
+            padding: 12px 16px;
             border-radius: 18px;
             background: white;
+            font-size: 14px;
+            line-height: 1.5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
         }
         
         .message.user .message-content {
@@ -539,15 +621,21 @@
         
         .message-input {
             flex: 1;
-            padding: 12px 15px;
+            padding: 12px 18px;
             border: 1px solid #e0e0e0;
             border-radius: 25px;
             font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .message-input:focus {
+            border-color: #07c160;
         }
         
         .send-btn {
-            width: 44px;
-            height: 44px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: #07c160;
             color: white;
@@ -556,31 +644,127 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s;
         }
         
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-100px);
-            background: white;
-            padding: 15px 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-            z-index: 1003;
-            transition: transform 0.3s;
-            border-left: 4px solid #07c160;
+        .send-btn:hover {
+            background: #06ad56;
+            transform: scale(1.05);
         }
         
-        .notification.show {
-            transform: translateX(-50%) translateY(0);
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #07c160;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            background: #07c160;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary:hover {
+            background: #06ad56;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(7, 193, 96, 0.3);
+        }
+        
+        /* 角色列表项样式 */
+        .role-item {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .role-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-color: #07c160;
+            background: #f0fff5;
+        }
+        
+        .role-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .role-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+            background: #07c160;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 600;
+            overflow: hidden;
+        }
+        
+        .role-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .role-info {
+            flex: 1;
+        }
+        
+        .role-name {
+            font-weight: 600;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .role-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
         }
     </style>
 </head>
 <body>
     <div class="app-container">
         <div class="status-bar">
-            <div class="time" id="currentTime">09:41</div>
+            <div class="time" id="currentTime">00:00</div>
             <div class="status-icons">
                 <div class="signal-icon" id="signalIcon">
                     <div class="signal-bar"></div>
@@ -600,7 +784,7 @@
         </div>
         
         <div class="main-content">
-            <!-- 聊天界面 -->
+            <!-- 聊天页面 -->
             <div class="page active" id="chatPage">
                 <div class="chat-header">
                     <div class="chat-title">联系人</div>
@@ -614,28 +798,31 @@
                             <i class="fas fa-users"></i>
                         </div>
                         <div>暂无联系人</div>
-                        <div style="font-size:14px;margin-top:10px;">点击右上角添加按钮创建AI角色</div>
+                        <div style="font-size: 14px; margin-top: 10px; color: #666;">
+                            点击右上角添加按钮创建AI角色
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <!-- 动态界面 -->
+            <!-- 动态页面 -->
             <div class="page" id="momentsPage">
                 <div class="moments-header">
                     <div class="cover-background" id="coverBackground">
                         <button class="cover-edit-btn" id="editCoverBtn">
-                            <i class="fas fa-camera"></i> 编辑封面
+                            <i class="fas fa-camera"></i>
+                            <span>编辑封面</span>
                         </button>
-                    </div>
-                    <div class="user-info-area">
-                        <div class="user-avatar-container">
-                            <img src="" alt="" class="user-avatar" id="userAvatar">
-                            <div class="avatar-edit-btn" id="editAvatarBtn">
-                                <i class="fas fa-camera"></i>
+                        <div class="user-info-area">
+                            <div class="user-avatar-container">
+                                <img src="" alt="" class="user-avatar" id="userAvatar">
+                                <button class="avatar-edit-btn" id="editAvatarBtn">
+                                    <i class="fas fa-camera"></i>
+                                </button>
                             </div>
+                            <div class="user-name" id="userName">用户</div>
+                            <div class="user-bio" id="userBio">点击编辑个性签名</div>
                         </div>
-                        <div class="user-name" id="userName">用户</div>
-                        <div class="user-bio" id="userBio">点击编辑个性签名</div>
                     </div>
                 </div>
                 <div class="moments-list" id="momentsList">
@@ -644,7 +831,9 @@
                             <i class="fas fa-camera"></i>
                         </div>
                         <div>还没有动态</div>
-                        <div style="font-size:14px;margin-top:10px;">点击右下角按钮发布第一条动态</div>
+                        <div style="font-size: 14px; margin-top: 10px; color: #666;">
+                            点击右下角按钮发布第一条动态
+                        </div>
                     </div>
                 </div>
                 <button class="add-moment-btn" id="addMomentBtn">
@@ -652,7 +841,7 @@
                 </button>
             </div>
             
-            <!-- 个人界面 -->
+            <!-- 个人页面 -->
             <div class="page" id="profilePage">
                 <div class="profile-header">
                     <div class="profile-avatar">
@@ -690,49 +879,57 @@
         </div>
     </div>
     
-    <!-- 角色管理器 -->
-    <div class="role-manager" id="roleManager">
-        <div class="role-manager-header">
-            <div style="font-size:18px;font-weight:600;">我的AI角色</div>
-            <button id="closeRoleManager" style="background:none;border:none;font-size:20px;cursor:pointer;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="role-list">
-            <div class="add-role-card" id="addNewRoleBtn">
-                <i class="fas fa-plus-circle" style="font-size:32px;margin-bottom:10px;"></i>
-                <div>添加新角色</div>
+    <!-- 角色管理器弹窗 -->
+    <div class="modal" id="roleManagerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">我的AI角色</div>
+                <button class="modal-close" id="closeRoleManager">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="roleList"></div>
+                <button class="btn-primary" id="addNewRoleBtn" style="margin-top: 20px;">
+                    添加新角色
+                </button>
             </div>
         </div>
     </div>
     
-    <!-- 角色编辑器 -->
-    <div class="role-editor" id="roleEditor">
-        <div class="role-manager-header">
-            <button id="backToRoleManager" style="background:none;border:none;font-size:20px;cursor:pointer;margin-right:15px;">
-                <i class="fas fa-chevron-left"></i>
-            </button>
-            <div style="font-size:18px;font-weight:600;">编辑角色</div>
-            <button id="saveRoleBtn" style="background:#07c160;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;">保存</button>
-        </div>
-        <div class="editor-content">
-            <div class="form-group">
-                <div style="font-weight:500;margin-bottom:8px;">角色头像</div>
-                <div id="roleAvatarUpload" style="text-align:center;padding:20px;border:2px dashed #e0e0e0;border-radius:12px;cursor:pointer;">
-                    <div id="roleAvatarPreview" style="width:80px;height:80px;border-radius:50%;margin:0 auto 10px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:24px;">
-                        <i class="fas fa-user"></i>
+    <!-- 角色编辑弹窗 -->
+    <div class="modal" id="roleEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">编辑角色</div>
+                <button class="modal-close" id="closeRoleEditor">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="form-label">角色头像</div>
+                    <div style="text-align: center;">
+                        <div id="roleAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <button class="btn-primary" id="uploadRoleAvatar" style="width: auto; padding: 10px 20px;">
+                            选择头像
+                        </button>
+                        <input type="file" id="roleAvatarInput" accept="image/*" style="display: none;">
                     </div>
-                    <div>点击上传头像</div>
-                    <input type="file" id="roleAvatarInput" accept="image/*" style="display:none;">
                 </div>
-            </div>
-            <div class="form-group">
-                <div style="font-weight:500;margin-bottom:8px;">角色名称</div>
-                <input type="text" class="form-input" id="roleName" placeholder="请输入角色名称">
-            </div>
-            <div class="form-group">
-                <div style="font-weight:500;margin-bottom:8px;">角色人设</div>
-                <textarea class="form-input" id="rolePersonality" placeholder="描述角色的性格、背景等" style="height:120px;resize:vertical;"></textarea>
+                <div class="form-group">
+                    <label class="form-label" for="roleName">角色名称</label>
+                    <input type="text" class="form-input" id="roleName" placeholder="请输入角色名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="rolePersonality">角色人设</label>
+                    <textarea class="form-input" id="rolePersonality" placeholder="描述角色的性格、背景、说话风格等" rows="4"></textarea>
+                </div>
+                <button class="btn-primary" id="saveRoleBtn">
+                    保存角色
+                </button>
             </div>
         </div>
     </div>
@@ -740,10 +937,10 @@
     <!-- 聊天对话框 -->
     <div class="chat-dialog" id="chatDialog">
         <div class="dialog-header">
-            <button id="backToChatList" style="background:none;border:none;font-size:20px;margin-right:15px;cursor:pointer;">
+            <button class="dialog-back" id="backToChatList">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <div style="flex:1;font-weight:600;font-size:16px;" id="currentRoleName">AI助手</div>
+            <div class="dialog-title" id="currentRoleName">AI助手</div>
         </div>
         <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
@@ -762,36 +959,359 @@
     <script>
         // 全局数据
         let currentTab = 'chat';
-        let roles = JSON.parse(localStorage.getItem('ai_roles') || '[]');
-        let moments = JSON.parse(localStorage.getItem('ai_moments') || '[]');
-        let userInfo = JSON.parse(localStorage.getItem('ai_user_info') || '{}');
-        let chatHistories = JSON.parse(localStorage.getItem('ai_chat_histories') || '{}');
+        let roles = JSON.parse(localStorage.getItem('ai_roles')) || [];
+        let moments = JSON.parse(localStorage.getItem('ai_moments')) || [];
+        let userInfo = JSON.parse(localStorage.getItem('ai_user_info')) || {};
+        let chatHistories = JSON.parse(localStorage.getItem('ai_chat_histories')) || {};
         let currentRoleId = null;
         let editingRoleId = null;
+        let batteryLevel = 85;
+        let batteryInterval;
         
-        // 初始化
+        // 初始化函数
         function init() {
             updateTime();
-            updateBattery();
-            updateNetwork();
+            updateBatteryDisplay();
+            startBatterySimulation();
             loadUserInfo();
             loadChatList();
             loadMoments();
+            setupEventListeners();
             
+            // 每分钟更新时间
+            setInterval(updateTime, 1000);
+        }
+        
+        // 更新时间
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('currentTime').textContent = `${hours}:${minutes}`;
+        }
+        
+        // 更新电量显示
+        function updateBatteryDisplay() {
+            const batteryLevelElement = document.getElementById('batteryLevel');
+            const batteryPercentElement = document.getElementById('batteryPercent');
+            
+            batteryLevelElement.style.width = `${batteryLevel}%`;
+            batteryPercentElement.textContent = `${batteryLevel}%`;
+            
+            // 根据电量改变颜色
+            if (batteryLevel <= 20) {
+                batteryLevelElement.style.background = '#f5222d'; // 红色
+            } else if (batteryLevel <= 50) {
+                batteryLevelElement.style.background = '#fa8c16'; // 橙色
+            } else {
+                batteryLevelElement.style.background = '#52c41a'; // 绿色
+            }
+        }
+        
+        // 模拟电量变化
+        function startBatterySimulation() {
+            if (batteryInterval) clearInterval(batteryInterval);
+            
+            batteryInterval = setInterval(() => {
+                // 模拟电量缓慢下降
+                if (batteryLevel > 0) {
+                    batteryLevel -= 0.1; // 每分钟下降0.1%
+                    if (batteryLevel < 0) batteryLevel = 0;
+                } else {
+                    // 电量耗尽后重置到100%
+                    batteryLevel = 100;
+                }
+                updateBatteryDisplay();
+            }, 60000); // 每分钟更新一次
+        }
+        
+        // 加载用户信息
+        function loadUserInfo() {
+            // 设置默认用户信息
+            if (!userInfo.name) {
+                userInfo = {
+                    name: '用户',
+                    bio: '点击编辑个性签名',
+                    avatar: '',
+                    coverBackground: '',
+                    userId: ''
+                };
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+            }
+            
+            // 更新UI
+            document.getElementById('userName').textContent = userInfo.name;
+            document.getElementById('userBio').textContent = userInfo.bio;
+            document.getElementById('profileName').textContent = userInfo.name;
+            document.getElementById('profileId').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : 'ID: 点击设置';
+            
+            // 设置封面背景
+            if (userInfo.coverBackground) {
+                document.getElementById('coverBackground').style.background = userInfo.coverBackground;
+            }
+            
+            // 设置头像
+            if (userInfo.avatar) {
+                document.getElementById('userAvatar').src = userInfo.avatar;
+                document.getElementById('profileAvatarImg').src = userInfo.avatar;
+            }
+        }
+        
+        // 加载聊天列表
+        function loadChatList() {
+            const chatList = document.getElementById('chatList');
+            
+            // 清空原有的示例角色
+            roles = roles.filter(role => !['ai助手', '编程导师'].includes(role.name.toLowerCase()));
+            localStorage.setItem('ai_roles', JSON.stringify(roles));
+            
+            if (roles.length === 0) {
+                chatList.innerHTML = `
+                    <div class="no-contacts">
+                        <div class="no-contacts-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>暂无联系人</div>
+                        <div style="font-size: 14px; margin-top: 10px; color: #666;">
+                            点击右上角添加按钮创建AI角色
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            chatList.innerHTML = '';
+            roles.forEach(role => {
+                const history = chatHistories[role.id] || [];
+                const lastMessage = history.length > 0 ? history[history.length - 1] : null;
+                
+                const roleItem = document.createElement('div');
+                roleItem.className = 'role-item';
+                roleItem.dataset.roleId = role.id;
+                roleItem.innerHTML = `
+                    <div class="role-header">
+                        <div class="role-avatar">
+                            ${role.avatar ? `<img src="${role.avatar}" alt="${role.name}">` : role.name.charAt(0)}
+                        </div>
+                        <div class="role-info">
+                            <div class="role-name">${role.name}</div>
+                            <div class="role-description">
+                                ${lastMessage ? (lastMessage.content.length > 30 ? lastMessage.content.substring(0, 30) + '...' : lastMessage.content) : '开始聊天'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                roleItem.addEventListener('click', () => openChatDialog(role.id));
+                chatList.appendChild(roleItem);
+            });
+        }
+        
+        // 加载动态
+        function loadMoments() {
+            const momentsList = document.getElementById('momentsList');
+            
+            if (moments.length === 0) {
+                momentsList.innerHTML = `
+                    <div class="no-moments">
+                        <div class="no-moments-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <div>还没有动态</div>
+                        <div style="font-size: 14px; margin-top: 10px; color: #666;">
+                            点击右下角按钮发布第一条动态
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            momentsList.innerHTML = '';
+            moments.forEach(moment => {
+                const momentItem = document.createElement('div');
+                momentItem.className = 'moment-item';
+                momentItem.style.cssText = 'background: white; border-radius: 12px; padding: 20px; margin-bottom: 15px;';
+                momentItem.innerHTML = `
+                    <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                        <div style="width: 45px; height: 45px; border-radius: 50%; background: #07c160; margin-right: 12px; overflow: hidden;">
+                            ${userInfo.avatar ? `<img src="${userInfo.avatar}" style="width: 100%; height: 100%; object-fit: cover;">` : 
+                              `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600;">${userInfo.name.charAt(0)}</div>`}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #333; margin-bottom: 4px;">${userInfo.name}</div>
+                            <div style="font-size: 12px; color: #999;">${moment.time}</div>
+                        </div>
+                    </div>
+                    <div style="color: #333; line-height: 1.6;">${moment.content}</div>
+                `;
+                momentsList.appendChild(momentItem);
+            });
+        }
+        
+        // 打开聊天对话框
+        function openChatDialog(roleId) {
+            currentRoleId = roleId;
+            const role = roles.find(r => r.id === roleId);
+            if (!role) return;
+            
+            document.getElementById('currentRoleName').textContent = role.name;
+            document.getElementById('chatMessages').innerHTML = '';
+            
+            // 加载聊天记录
+            const history = chatHistories[roleId] || [];
+            if (history.length === 0) {
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.className = 'message';
+                welcomeMsg.innerHTML = `
+                    <div class="message-content">
+                        你好！我是${role.name}。${role.personality ? role.personality.substring(0, 100) + '...' : '很高兴为你服务！'}
+                    </div>
+                `;
+                document.getElementById('chatMessages').appendChild(welcomeMsg);
+            } else {
+                history.forEach(msg => {
+                    const msgElement = document.createElement('div');
+                    msgElement.className = `message ${msg.role === 'user' ? 'user' : ''}`;
+                    msgElement.innerHTML = `<div class="message-content">${msg.content}</div>`;
+                    document.getElementById('chatMessages').appendChild(msgElement);
+                });
+            }
+            
+            // 显示对话框
+            document.getElementById('chatDialog').classList.add('active');
+            document.getElementById('chatMessageInput').focus();
+            
+            // 滚动到底部
+            setTimeout(() => {
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 100);
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const input = document.getElementById('chatMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentRoleId) return;
+            
+            const role = roles.find(r => r.id === currentRoleId);
+            if (!role) return;
+            
+            // 添加用户消息
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerHTML = `<div class="message-content">${message}</div>`;
+            document.getElementById('chatMessages').appendChild(userMsg);
+            
+            // 保存消息历史
+            if (!chatHistories[currentRoleId]) {
+                chatHistories[currentRoleId] = [];
+            }
+            
+            chatHistories[currentRoleId].push({
+                role: 'user',
+                content: message,
+                time: Date.now()
+            });
+            
+            // 清空输入框
+            input.value = '';
+            
+            // 模拟AI回复
+            setTimeout(() => {
+                const responses = [
+                    `我理解你的意思："${message}"。作为一个${role.name}，我会尽力帮助你。`,
+                    `关于"${message}"，这是一个很好的话题！让我想想怎么回答你。`,
+                    `你说得对，"${message}"确实值得讨论。让我分享一下我的看法。`,
+                    `我收到了你的消息："${message}"。${role.personality ? '根据我的角色设定，' + role.personality.substring(0, 50) + '...' : '我很乐意和你聊天。'}`,
+                    `感谢你的分享。关于"${message}"，我可以从几个角度来分析...`
+                ];
+                
+                const reply = responses[Math.floor(Math.random() * responses.length)];
+                
+                // 添加AI回复
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message';
+                aiMsg.innerHTML = `<div class="message-content">${reply}</div>`;
+                document.getElementById('chatMessages').appendChild(aiMsg);
+                
+                // 保存AI回复
+                chatHistories[currentRoleId].push({
+                    role: 'assistant',
+                    content: reply,
+                    time: Date.now()
+                });
+                
+                // 保存到本地存储
+                localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
+                
+                // 更新聊天列表
+                loadChatList();
+                
+                // 滚动到底部
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }, 1000);
+            
+            // 保存用户消息
+            localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
+            
+            // 滚动到底部
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        // 显示通知
+        function showNotification(message, duration = 3000) {
+            const notification = document.getElementById('notification');
+            const content = document.getElementById('notificationContent');
+            
+            content.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, duration);
+        }
+        
+        // 上传图片
+        function uploadImage(callback) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        callback(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+            input.click();
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
             // 标签页切换
             document.querySelectorAll('.tab-item').forEach(tab => {
                 tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    
+                    // 更新标签状态
                     document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                     
                     tab.classList.add('active');
-                    currentTab = tab.dataset.tab;
                     
-                    if (currentTab === 'chat') {
+                    // 显示对应的页面
+                    if (tabName === 'chat') {
                         document.getElementById('chatPage').classList.add('active');
-                    } else if (currentTab === 'moments') {
+                    } else if (tabName === 'moments') {
                         document.getElementById('momentsPage').classList.add('active');
-                    } else if (currentTab === 'profile') {
+                    } else if (tabName === 'profile') {
                         document.getElementById('profilePage').classList.add('active');
                     }
                 });
@@ -799,61 +1319,120 @@
             
             // 添加角色按钮
             document.getElementById('addRoleBtn').addEventListener('click', () => {
-                document.getElementById('roleManager').classList.add('active');
+                document.getElementById('roleManagerModal').classList.add('active');
                 loadRoleList();
-            });
-            
-            document.getElementById('addNewRoleBtn').addEventListener('click', () => {
-                openRoleEditor();
-            });
-            
-            // 关闭角色管理器
-            document.getElementById('closeRoleManager').addEventListener('click', () => {
-                document.getElementById('roleManager').classList.remove('active');
             });
             
             // 我的角色按钮
             document.getElementById('myRolesBtn').addEventListener('click', () => {
-                document.getElementById('roleManager').classList.add('active');
+                document.getElementById('roleManagerModal').classList.add('active');
                 loadRoleList();
             });
             
-            // 添加动态
-            document.getElementById('addMomentBtn').addEventListener('click', () => {
-                const content = prompt('请输入动态内容：');
-                if (content && content.trim()) {
-                    const newMoment = {
-                        id: 'moment_' + Date.now(),
-                        content: content.trim(),
-                        time: new Date().toLocaleString(),
-                        author: userInfo.name || '用户'
+            // 关闭角色管理器
+            document.getElementById('closeRoleManager').addEventListener('click', () => {
+                document.getElementById('roleManagerModal').classList.remove('active');
+            });
+            
+            // 添加新角色按钮
+            document.getElementById('addNewRoleBtn').addEventListener('click', () => {
+                document.getElementById('roleManagerModal').classList.remove('active');
+                document.getElementById('roleEditorModal').classList.add('active');
+                editingRoleId = null;
+                
+                // 重置表单
+                document.getElementById('roleName').value = '';
+                document.getElementById('rolePersonality').value = '';
+                document.getElementById('roleAvatarPreview').innerHTML = '<i class="fas fa-user"></i>';
+            });
+            
+            // 关闭角色编辑器
+            document.getElementById('closeRoleEditor').addEventListener('click', () => {
+                document.getElementById('roleEditorModal').classList.remove('active');
+            });
+            
+            // 上传角色头像
+            document.getElementById('uploadRoleAvatar').addEventListener('click', () => {
+                document.getElementById('roleAvatarInput').click();
+            });
+            
+            document.getElementById('roleAvatarInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        document.getElementById('roleAvatarPreview').innerHTML = 
+                            `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
                     };
-                    moments.push(newMoment);
-                    localStorage.setItem('ai_moments', JSON.stringify(moments));
-                    loadMoments();
-                    showNotification('动态发布成功');
+                    reader.readAsDataURL(file);
                 }
+            });
+            
+            // 保存角色
+            document.getElementById('saveRoleBtn').addEventListener('click', () => {
+                const name = document.getElementById('roleName').value.trim();
+                const personality = document.getElementById('rolePersonality').value.trim();
+                
+                if (!name) {
+                    showNotification('请输入角色名称');
+                    return;
+                }
+                
+                // 获取头像
+                const avatarPreview = document.getElementById('roleAvatarPreview');
+                const avatarImg = avatarPreview.querySelector('img');
+                const avatar = avatarImg ? avatarImg.src : '';
+                
+                if (editingRoleId) {
+                    // 更新现有角色
+                    const roleIndex = roles.findIndex(r => r.id === editingRoleId);
+                    if (roleIndex !== -1) {
+                        roles[roleIndex] = {
+                            ...roles[roleIndex],
+                            name,
+                            personality,
+                            avatar
+                        };
+                    }
+                } else {
+                    // 创建新角色
+                    const newRole = {
+                        id: 'role_' + Date.now(),
+                        name,
+                        personality,
+                        avatar,
+                        createdAt: Date.now()
+                    };
+                    roles.push(newRole);
+                }
+                
+                // 保存到本地存储
+                localStorage.setItem('ai_roles', JSON.stringify(roles));
+                
+                // 关闭编辑器
+                document.getElementById('roleEditorModal').classList.remove('active');
+                
+                // 更新UI
+                loadChatList();
+                
+                showNotification('角色保存成功');
             });
             
             // 编辑封面
             document.getElementById('editCoverBtn').addEventListener('click', () => {
-                const colors = [
-                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    'linear-gradient(135deg, #07c160 0%, #06ad56 100%)',
-                    'linear-gradient(135deg, #1890ff 0%, #096dd9 100%)',
-                    'linear-gradient(135deg, #f5222d 0%, #cf1322 100%)',
-                    'linear-gradient(135deg, #fa8c16 0%, #d46b08 100%)'
-                ];
-                const randomColor = colors[Math.floor(Math.random() * colors.length)];
-                document.getElementById('coverBackground').style.background = randomColor;
-                userInfo.coverBackground = randomColor;
-                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
-                showNotification('封面已更新');
+                uploadImage((imageData) => {
+                    if (imageData) {
+                        document.getElementById('coverBackground').style.background = `url('${imageData}') center/cover no-repeat`;
+                        userInfo.coverBackground = `url('${imageData}') center/cover no-repeat`;
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                        showNotification('封面已更新');
+                    }
+                });
             });
             
             // 编辑头像
             document.getElementById('editAvatarBtn').addEventListener('click', () => {
-                uploadImage().then(imageData => {
+                uploadImage((imageData) => {
                     if (imageData) {
                         userInfo.avatar = imageData;
                         localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
@@ -876,7 +1455,7 @@
             
             // 编辑用户名
             document.getElementById('userName').addEventListener('click', () => {
-                const newName = prompt('请输入用户名：', userInfo.name || '用户');
+                const newName = prompt('请输入用户名：', userInfo.name || '');
                 if (newName !== null && newName.trim()) {
                     userInfo.name = newName.trim();
                     localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
@@ -896,32 +1475,21 @@
                 }
             });
             
-            // 返回角色管理器
-            document.getElementById('backToRoleManager').addEventListener('click', () => {
-                document.getElementById('roleEditor').classList.remove('active');
-            });
-            
-            // 保存角色
-            document.getElementById('saveRoleBtn').addEventListener('click', saveRole);
-            
-            // 头像上传
-            document.getElementById('roleAvatarUpload').addEventListener('click', () => {
-                document.getElementById('roleAvatarInput').click();
-            });
-            
-            document.getElementById('roleAvatarInput').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        document.getElementById('roleAvatarPreview').innerHTML = 
-                            `<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">`;
-                        if (editingRoleId) {
-                            const role = roles.find(r => r.id === editingRoleId);
-                            if (role) role.avatar = e.target.result;
-                        }
+            // 添加动态
+            document.getElementById('addMomentBtn').addEventListener('click', () => {
+                const content = prompt('请输入动态内容：');
+                if (content && content.trim()) {
+                    const newMoment = {
+                        id: 'moment_' + Date.now(),
+                        content: content.trim(),
+                        time: new Date().toLocaleString(),
+                        author: userInfo.name
                     };
-                    reader.readAsDataURL(file);
+                    
+                    moments.push(newMoment);
+                    localStorage.setItem('ai_moments', JSON.stringify(moments));
+                    loadMoments();
+                    showNotification('动态发布成功');
                 }
             });
             
@@ -932,325 +1500,52 @@
             
             // 发送消息
             document.getElementById('sendChatMessage').addEventListener('click', sendMessage);
+            
+            // 回车发送消息
             document.getElementById('chatMessageInput').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') sendMessage();
-            });
-            
-            // 定时更新
-            setInterval(updateTime, 1000);
-            setInterval(updateBattery, 60000);
-        }
-        
-        function updateTime() {
-            const now = new Date();
-            document.getElementById('currentTime').textContent = 
-                now.getHours().toString().padStart(2, '0') + ':' + 
-                now.getMinutes().toString().padStart(2, '0');
-        }
-        
-        function updateBattery() {
-            if (navigator.getBattery) {
-                navigator.getBattery().then(battery => {
-                    const level = Math.round(battery.level * 100);
-                    document.getElementById('batteryLevel').style.width = level + '%';
-                    document.getElementById('batteryPercent').textContent = level + '%';
-                    
-                    if (level <= 20) {
-                        document.getElementById('batteryLevel').style.background = '#f5222d';
-                    } else if (level <= 50) {
-                        document.getElementById('batteryLevel').style.background = '#fa8c16';
-                    } else {
-                        document.getElementById('batteryLevel').style.background = '#52c41a';
-                    }
-                });
-            }
-        }
-        
-        function updateNetwork() {
-            if (navigator.connection) {
-                const connection = navigator.connection;
-                const strength = Math.floor(connection.downlink / 10) + 1;
-                const bars = document.querySelectorAll('.signal-bar');
-                bars.forEach((bar, index) => {
-                    bar.style.background = index < strength ? '#333' : '#ccc';
-                });
-            }
-        }
-        
-        function loadUserInfo() {
-            if (userInfo.avatar) {
-                document.getElementById('userAvatar').src = userInfo.avatar;
-                document.getElementById('profileAvatarImg').src = userInfo.avatar;
-            }
-            if (userInfo.name) {
-                document.getElementById('userName').textContent = userInfo.name;
-                document.getElementById('profileName').textContent = userInfo.name;
-            }
-            if (userInfo.bio) {
-                document.getElementById('userBio').textContent = userInfo.bio;
-            }
-            if (userInfo.userId) {
-                document.getElementById('profileId').textContent = 'ID: ' + userInfo.userId;
-            }
-            if (userInfo.coverBackground) {
-                document.getElementById('coverBackground').style.background = userInfo.coverBackground;
-            }
-        }
-        
-        function loadChatList() {
-            const chatList = document.getElementById('chatList');
-            if (roles.length === 0) return;
-            
-            chatList.innerHTML = '';
-            roles.forEach(role => {
-                const history = chatHistories[role.id] || [];
-                const lastMessage = history.length > 0 ? history[history.length - 1] : null;
-                
-                const item = document.createElement('div');
-                item.className = 'chat-item';
-                item.style.cssText = 'display:flex;align-items:center;padding:12px 15px;background:white;border-bottom:1px solid #eee;cursor:pointer;';
-                item.innerHTML = `
-                    <div style="width:45px;height:45px;border-radius:50%;background:#07c160;margin-right:12px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;">
-                        ${role.avatar ? `<img src="${role.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : role.name.charAt(0)}
-                    </div>
-                    <div style="flex:1;">
-                        <div style="font-weight:500;color:#333;">${role.name}</div>
-                        <div style="font-size:14px;color:#999;margin-top:4px;">
-                            ${lastMessage ? (lastMessage.content.length > 20 ? lastMessage.content.substring(0, 20) + '...' : lastMessage.content) : '开始聊天'}
-                        </div>
-                    </div>
-                `;
-                item.addEventListener('click', () => openChatDialog(role.id));
-                chatList.appendChild(item);
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
             });
         }
         
-        function loadMoments() {
-            const momentsList = document.getElementById('momentsList');
-            if (moments.length === 0) return;
-            
-            momentsList.innerHTML = '';
-            moments.forEach(moment => {
-                const item = document.createElement('div');
-                item.className = 'moment-item';
-                item.style.cssText = 'background:white;border-radius:12px;padding:15px;margin-bottom:15px;';
-                item.innerHTML = `
-                    <div style="display:flex;align-items:center;margin-bottom:12px;">
-                        <div style="width:40px;height:40px;border-radius:50%;background:#07c160;margin-right:10px;display:flex;align-items:center;justify-content:center;color:white;font-weight:600;">
-                            ${userInfo.avatar ? `<img src="${userInfo.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (userInfo.name || '用户').charAt(0)}
-                        </div>
-                        <div style="flex:1;">
-                            <div style="font-weight:500;color:#333;">${userInfo.name || '用户'}</div>
-                            <div style="font-size:12px;color:#999;">${moment.time}</div>
-                        </div>
-                    </div>
-                    <div style="color:#333;line-height:1.5;">${moment.content}</div>
-                `;
-                momentsList.appendChild(item);
-            });
-        }
-        
+        // 加载角色列表
         function loadRoleList() {
             const roleList = document.getElementById('roleList');
-            roleList.innerHTML = '<div class="add-role-card" id="addNewRoleBtn"><i class="fas fa-plus-circle" style="font-size:32px;margin-bottom:10px;"></i><div>添加新角色</div></div>';
+            roleList.innerHTML = '';
             
-            document.getElementById('addNewRoleBtn').addEventListener('click', () => {
-                openRoleEditor();
-            });
-            
-            if (roles.length === 0) return;
-            
-            roles.forEach(role => {
-                const item = document.createElement('div');
-                item.className = 'role-item';
-                item.style.cssText = 'background:#f8f9fa;border-radius:12px;padding:15px;margin-bottom:15px;cursor:pointer;';
-                item.innerHTML = `
-                    <div style="display:flex;align-items:center;margin-bottom:10px;">
-                        <div style="width:50px;height:50px;border-radius:50%;background:#07c160;margin-right:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;font-weight:600;">
-                            ${role.avatar ? `<img src="${role.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : role.name.charAt(0)}
-                        </div>
-                        <div style="flex:1;">
-                            <div style="font-weight:600;color:#333;">${role.name}</div>
-                            <div style="font-size:14px;color:#666;">${role.personality ? role.personality.substring(0, 30) + '...' : '无简介'}</div>
-                        </div>
-                    </div>
-                `;
-                item.addEventListener('click', () => openChatDialog(role.id));
-                roleList.insertBefore(item, document.getElementById('addNewRoleBtn'));
-            });
-        }
-        
-        function openRoleEditor(roleId = null) {
-            editingRoleId = roleId;
-            document.getElementById('roleManager').classList.remove('active');
-            document.getElementById('roleEditor').classList.add('active');
-            
-            if (roleId) {
-                const role = roles.find(r => r.id === roleId);
-                if (role) {
-                    document.getElementById('roleName').value = role.name || '';
-                    document.getElementById('rolePersonality').value = role.personality || '';
-                    if (role.avatar) {
-                        document.getElementById('roleAvatarPreview').innerHTML = 
-                            `<img src="${role.avatar}" style="width:100%;height:100%;object-fit:cover;">`;
-                    }
-                }
-            } else {
-                document.getElementById('roleName').value = '';
-                document.getElementById('rolePersonality').value = '';
-                document.getElementById('roleAvatarPreview').innerHTML = '<i class="fas fa-user"></i>';
-            }
-        }
-        
-        function saveRole() {
-            const name = document.getElementById('roleName').value.trim();
-            const personality = document.getElementById('rolePersonality').value.trim();
-            
-            if (!name) {
-                showNotification('请输入角色名称');
+            if (roles.length === 0) {
+                roleList.innerHTML = '<div style="text-align: center; color: #999; padding: 30px;">还没有创建角色</div>';
                 return;
             }
             
-            const roleAvatar = document.getElementById('roleAvatarPreview').querySelector('img');
-            const avatar = roleAvatar ? roleAvatar.src : '';
-            
-            if (editingRoleId) {
-                const roleIndex = roles.findIndex(r => r.id === editingRoleId);
-                if (roleIndex !== -1) {
-                    roles[roleIndex] = {
-                        ...roles[roleIndex],
-                        name,
-                        personality,
-                        avatar
-                    };
-                }
-            } else {
-                const newRole = {
-                    id: 'role_' + Date.now(),
-                    name,
-                    personality,
-                    avatar,
-                    createdAt: Date.now()
-                };
-                roles.push(newRole);
-            }
-            
-            localStorage.setItem('ai_roles', JSON.stringify(roles));
-            document.getElementById('roleEditor').classList.remove('active');
-            loadChatList();
-            showNotification('角色保存成功');
-        }
-        
-        function openChatDialog(roleId) {
-            currentRoleId = roleId;
-            const role = roles.find(r => r.id === roleId);
-            if (!role) return;
-            
-            document.getElementById('currentRoleName').textContent = role.name;
-            document.getElementById('chatMessages').innerHTML = '';
-            
-            const history = chatHistories[roleId] || [];
-            if (history.length === 0) {
-                const welcomeMsg = document.createElement('div');
-                welcomeMsg.className = 'message';
-                welcomeMsg.innerHTML = `<div class="message-content">你好！我是${role.name}。${role.personality || '很高兴为你服务！'}</div>`;
-                document.getElementById('chatMessages').appendChild(welcomeMsg);
-            } else {
-                history.forEach(msg => {
-                    const msgEl = document.createElement('div');
-                    msgEl.className = `message ${msg.role === 'user' ? 'user' : ''}`;
-                    msgEl.innerHTML = `<div class="message-content">${msg.content}</div>`;
-                    document.getElementById('chatMessages').appendChild(msgEl);
+            roles.forEach(role => {
+                const roleItem = document.createElement('div');
+                roleItem.className = 'role-item';
+                roleItem.innerHTML = `
+                    <div class="role-header">
+                        <div class="role-avatar">
+                            ${role.avatar ? `<img src="${role.avatar}" alt="${role.name}">` : role.name.charAt(0)}
+                        </div>
+                        <div class="role-info">
+                            <div class="role-name">${role.name}</div>
+                            <div class="role-description">
+                                ${role.personality ? (role.personality.length > 50 ? role.personality.substring(0, 50) + '...' : role.personality) : '暂无描述'}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                roleItem.addEventListener('click', () => {
+                    openChatDialog(role.id);
+                    document.getElementById('roleManagerModal').classList.remove('active');
                 });
-            }
-            
-            document.getElementById('chatDialog').classList.add('active');
-            document.getElementById('chatMessageInput').focus();
-        }
-        
-        function sendMessage() {
-            const input = document.getElementById('chatMessageInput');
-            const message = input.value.trim();
-            if (!message || !currentRoleId) return;
-            
-            // 添加用户消息
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.innerHTML = `<div class="message-content">${message}</div>`;
-            document.getElementById('chatMessages').appendChild(userMsg);
-            
-            // 保存消息
-            if (!chatHistories[currentRoleId]) chatHistories[currentRoleId] = [];
-            chatHistories[currentRoleId].push({
-                role: 'user',
-                content: message,
-                time: Date.now()
-            });
-            
-            localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
-            
-            // 清空输入框
-            input.value = '';
-            
-            // 模拟AI回复
-            setTimeout(() => {
-                const role = roles.find(r => r.id === currentRoleId);
-                const responses = [
-                    `我理解你的意思："${message}"。作为一个${role?.name || 'AI助手'}，我会尽力帮助你。`,
-                    `关于"${message}"，这是一个很好的话题！让我想想怎么回答你。`,
-                    `你说得对，"${message}"确实值得讨论。让我分享一下我的看法。`,
-                    `我收到了你的消息："${message}"。${role?.personality ? '根据我的角色设定，' + role.personality.substring(0, 50) : '我很乐意和你聊天。'}`
-                ];
-                const reply = responses[Math.floor(Math.random() * responses.length)];
                 
-                const aiMsg = document.createElement('div');
-                aiMsg.className = 'message';
-                aiMsg.innerHTML = `<div class="message-content">${reply}</div>`;
-                document.getElementById('chatMessages').appendChild(aiMsg);
-                
-                chatHistories[currentRoleId].push({
-                    role: 'assistant',
-                    content: reply,
-                    time: Date.now()
-                });
-                localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
-                
-                // 滚动到底部
-                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-                loadChatList();
-            }, 1000);
-            
-            // 滚动到底部
-            document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
-        }
-        
-        function uploadImage() {
-            return new Promise(resolve => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = 'image/*';
-                input.onchange = (e) => {
-                    const file = e.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = (e) => resolve(e.target.result);
-                        reader.readAsDataURL(file);
-                    } else {
-                        resolve(null);
-                    }
-                };
-                input.click();
+                roleList.appendChild(roleItem);
             });
         }
         
-        function showNotification(message, duration = 3000) {
-            const notification = document.getElementById('notification');
-            notification.querySelector('#notificationContent').textContent = message;
-            notification.classList.add('show');
-            setTimeout(() => notification.classList.remove('show'), duration);
-        }
-        
-        // 启动
+        // 初始化应用
         document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
