@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>quq小手机</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -10,28 +10,77 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
         }
         
         body {
             background: #f0f2f5;
-            min-height: 100vh;
             width: 100%;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 0;
+                align-items: flex-start;
+                background: #000;
+            }
+            
+            .app-container {
+                width: 100%;
+                max-width: 540px;
+                height: 1132px;
+                border-radius: 40px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                margin: 20px auto;
+            }
+        }
+        
+        /* 电脑端适配 */
+        @media (min-width: 769px) {
+            .app-container {
+                width: 375px;
+                height: 812px;
+                border-radius: 40px;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                position: relative;
+            }
+        }
+        
+        /* 浏览器兼容性处理 */
+        @supports (-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px)) {
+            .status-bar {
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+            }
+        }
+        
+        @supports not ((-webkit-backdrop-filter: blur(20px)) or (backdrop-filter: blur(20px))) {
+            .status-bar {
+                background: rgba(255, 255, 255, 0.98);
+            }
         }
         
         .app-container {
-            width: 100%;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             background: white;
+            position: relative;
         }
         
         /* 状态栏 */
         .status-bar {
             height: 44px;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -98,7 +147,7 @@
             border-right-color: transparent;
         }
         
-        /* 重新设计电池样式 */
+        /* 电池样式 */
         .battery-container {
             display: flex;
             align-items: center;
@@ -192,6 +241,7 @@
             overflow-y: auto;
             display: none;
             background: #f5f5f5;
+            -webkit-overflow-scrolling: touch;
         }
         
         .page.active {
@@ -281,7 +331,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            backdrop-filter: blur(5px);
             transition: all 0.3s;
         }
         
@@ -476,54 +525,49 @@
         .profile-signature {
             font-size: 15px;
             color: #444;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.4;
         }
         
         .profile-status-tags-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            margin-top: 10px;
         }
         
         .profile-status {
             padding: 6px 15px;
-            background: #f0f9ff;
             border-radius: 18px;
             font-size: 14px;
-            color: #1890ff;
             cursor: pointer;
             transition: all 0.3s;
-            border: 1px solid #91d5ff;
+            border: 1px solid rgba(0, 0, 0, 0.1);
             display: inline-block;
+            margin-bottom: 12px;
+            font-weight: 500;
         }
         
         .profile-status:hover {
-            background: #e6f7ff;
             transform: translateY(-1px);
         }
         
         .profile-tags-container {
             display: flex;
-            gap: 8px;
             flex-wrap: wrap;
-            flex: 1;
+            gap: 8px;
+            margin-top: 15px;
         }
         
         .profile-tag {
             padding: 6px 12px;
-            background: #f6ffed;
-            border: 1px solid #b7eb8f;
             border-radius: 15px;
             font-size: 13px;
-            color: #389e0d;
             cursor: pointer;
             transition: all 0.3s;
             display: inline-block;
+            font-weight: 500;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
         
         .profile-tag:hover {
-            background: #d9f7be;
             transform: translateY(-1px);
         }
         
@@ -714,6 +758,7 @@
             overflow-y: auto;
             padding: 20px;
             background: #f5f5f5;
+            -webkit-overflow-scrolling: touch;
         }
         
         .message {
@@ -894,6 +939,18 @@
             color: #666;
             line-height: 1.4;
         }
+        
+        /* 浅色系颜色数组 */
+        .light-colors {
+            --color-1: #f0f9ff;
+            --color-2: #f6ffed;
+            --color-3: #fff7e6;
+            --color-4: #fff0f6;
+            --color-5: #f0fff5;
+            --color-6: #f9f0ff;
+            --color-7: #e6fffb;
+            --color-8: #fcfaf2;
+        }
     </style>
 </head>
 <body>
@@ -979,7 +1036,7 @@
                 </button>
             </div>
             
-            <!-- 个人页面 - 头像在名称左边 -->
+            <!-- 个人页面 - 头像在名称左边，标签在签名下方横行排列 -->
             <div class="page" id="profilePage">
                 <div class="profile-header">
                     <div class="profile-avatar-name-container">
@@ -993,25 +1050,28 @@
                             <div class="profile-name" id="profileName">用户</div>
                             <div class="profile-id" id="profileId">ID: 点击设置</div>
                             <div class="profile-signature" id="profileSignature">点击编辑个性签名</div>
-                            <div class="profile-status-tags-container">
-                                <div class="profile-status" id="profileStatus">
-                                    <span id="statusText">点击设置状态</span>
-                                </div>
-                                <div class="profile-tags-container" id="profileTagsContainer">
-                                    <div class="profile-tag">标签1</div>
-                                    <div class="profile-tag">标签2</div>
-                                    <div class="profile-tag">标签3</div>
-                                </div>
+                            
+                            <!-- 状态放在签名下方 -->
+                            <div class="profile-status" id="profileStatus">
+                                <span id="statusText">点击设置状态</span>
+                            </div>
+                            
+                            <!-- 标签在状态下方横行排列 -->
+                            <div class="profile-tags-container" id="profileTagsContainer">
+                                <div class="profile-tag">标签1</div>
+                                <div class="profile-tag">标签2</div>
+                                <div class="profile-tag">标签3</div>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="profile-menu">
-                    <div class="menu-item" id="myRolesBtn">
+                    <!-- 改为"我的联系人" -->
+                    <div class="menu-item" id="myContactsBtn">
                         <div class="menu-icon">
                             <i class="fas fa-robot"></i>
                         </div>
-                        <div class="menu-text">我的AI角色</div>
+                        <div class="menu-text">我的联系人</div>
                     </div>
                 </div>
             </div>
@@ -1037,7 +1097,7 @@
     <div class="modal" id="roleManagerModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">我的AI角色</div>
+                <div class="modal-title">我的联系人</div>
                 <button class="modal-close" id="closeRoleManager">
                     <i class="fas fa-times"></i>
                 </button>
@@ -1045,7 +1105,7 @@
             <div class="modal-body">
                 <div id="roleList"></div>
                 <button class="btn-primary" id="addNewRoleBtn" style="margin-top: 20px;">
-                    添加新角色
+                    添加新联系人
                 </button>
             </div>
         </div>
@@ -1055,14 +1115,14 @@
     <div class="modal" id="roleEditorModal">
         <div class="modal-content">
             <div class="modal-header">
-                <div class="modal-title">编辑角色</div>
+                <div class="modal-title">编辑联系人</div>
                 <button class="modal-close" id="closeRoleEditor">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <div class="form-label">角色头像</div>
+                    <div class="form-label">联系人头像</div>
                     <div style="text-align: center;">
                         <div id="roleAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">
                             <i class="fas fa-user"></i>
@@ -1074,15 +1134,15 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="roleName">角色名称</label>
-                    <input type="text" class="form-input" id="roleName" placeholder="请输入角色名称">
+                    <label class="form-label" for="roleName">联系人名称</label>
+                    <input type="text" class="form-input" id="roleName" placeholder="请输入联系人名称">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="rolePersonality">角色人设</label>
-                    <textarea class="form-input" id="rolePersonality" placeholder="描述角色的性格、背景、说话风格等" rows="4"></textarea>
+                    <label class="form-label" for="rolePersonality">联系人设定</label>
+                    <textarea class="form-input" id="rolePersonality" placeholder="描述联系人的性格、背景、说话风格等" rows="4"></textarea>
                 </div>
                 <button class="btn-primary" id="saveRoleBtn">
-                    保存角色
+                    保存联系人
                 </button>
             </div>
         </div>
@@ -1120,6 +1180,25 @@
         let currentRoleId = null;
         let editingRoleId = null;
         let batteryMonitor = null;
+        
+        // 浅色系颜色数组
+        const lightColors = [
+            {bg: '#f0f9ff', border: '#91d5ff', text: '#1890ff'}, // 浅蓝色
+            {bg: '#f6ffed', border: '#b7eb8f', text: '#389e0d'}, // 浅绿色
+            {bg: '#fff7e6', border: '#ffd591', text: '#d46b08'}, // 浅橙色
+            {bg: '#fff0f6', border: '#ffadd2', text: '#c41d7f'}, // 浅粉色
+            {bg: '#f0fff5', border: '#95de64', text: '#237804'}, // 浅薄荷绿
+            {bg: '#f9f0ff', border: '#d3adf7', text: '#722ed1'}, // 浅紫色
+            {bg: '#e6fffb', border: '#87e8de', text: '#08979c'}, // 浅青色
+            {bg: '#fcfaf2', border: '#ffd666', text: '#ad8b00'}, // 浅米色
+            {bg: '#f9f9f9', border: '#d9d9d9', text: '#595959'}, // 浅灰色
+            {bg: '#fff2e8', border: '#ffbb96', text: '#d4380d'}, // 浅桃色
+        ];
+        
+        // 获取随机浅色
+        function getRandomLightColor() {
+            return lightColors[Math.floor(Math.random() * lightColors.length)];
+        }
         
         // 初始化函数
         function init() {
@@ -1251,7 +1330,9 @@
                     userId: '',
                     profileSignature: '点击编辑个性签名',
                     status: '点击设置状态',
-                    tags: ['标签1', '标签2', '标签3']
+                    tags: ['标签1', '标签2', '标签3'],
+                    statusColor: null,
+                    tagColors: []
                 };
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             }
@@ -1266,24 +1347,57 @@
             document.getElementById('profileSignature').textContent = userInfo.profileSignature || '点击编辑个性签名';
             document.getElementById('statusText').textContent = userInfo.status || '点击设置状态';
             
+            // 更新状态颜色
+            const statusElement = document.getElementById('profileStatus');
+            if (!userInfo.statusColor) {
+                userInfo.statusColor = getRandomLightColor();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+            }
+            statusElement.style.background = userInfo.statusColor.bg;
+            statusElement.style.borderColor = userInfo.statusColor.border;
+            statusElement.style.color = userInfo.statusColor.text;
+            
             // 更新标签
             const profileTagsContainer = document.getElementById('profileTagsContainer');
             profileTagsContainer.innerHTML = '';
+            
+            // 初始化标签颜色数组
+            if (!userInfo.tagColors || userInfo.tagColors.length !== userInfo.tags.length) {
+                userInfo.tagColors = [];
+                for (let i = 0; i < userInfo.tags.length; i++) {
+                    userInfo.tagColors.push(getRandomLightColor());
+                }
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+            }
+            
             if (userInfo.tags && Array.isArray(userInfo.tags)) {
-                userInfo.tags.forEach(tag => {
-                    if (tag) { // 确保标签不为空
+                userInfo.tags.forEach((tag, index) => {
+                    if (tag) {
                         const tagElement = document.createElement('div');
                         tagElement.className = 'profile-tag';
                         tagElement.textContent = tag;
-                        tagElement.addEventListener('click', () => editTag(tag));
+                        
+                        // 应用随机颜色
+                        const color = userInfo.tagColors[index];
+                        tagElement.style.background = color.bg;
+                        tagElement.style.borderColor = color.border;
+                        tagElement.style.color = color.text;
+                        
+                        tagElement.addEventListener('click', () => editTag(tag, index));
                         profileTagsContainer.appendChild(tagElement);
                     }
                 });
                 
-                // 确保至少有3个标签
+                // 确保恰好有3个标签
                 while (userInfo.tags.length < 3) {
                     userInfo.tags.push(`标签${userInfo.tags.length + 1}`);
+                    userInfo.tagColors.push(getRandomLightColor());
                 }
+                while (userInfo.tags.length > 3) {
+                    userInfo.tags.pop();
+                    userInfo.tagColors.pop();
+                }
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             }
             
             // 设置动态封面背景
@@ -1522,16 +1636,15 @@
         }
         
         // 编辑标签
-        function editTag(tag) {
+        function editTag(tag, index) {
             const newTag = prompt('编辑标签内容：', tag);
             if (newTag !== null && newTag.trim()) {
-                const index = userInfo.tags.indexOf(tag);
-                if (index !== -1) {
-                    userInfo.tags[index] = newTag.trim();
-                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
-                    loadUserInfo();
-                    showToast('标签已更新');
-                }
+                userInfo.tags[index] = newTag.trim();
+                // 更新标签颜色
+                userInfo.tagColors[index] = getRandomLightColor();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                loadUserInfo();
+                showToast('标签已更新');
             }
         }
         
@@ -1565,8 +1678,8 @@
                 loadRoleList();
             });
             
-            // 我的角色按钮
-            document.getElementById('myRolesBtn').addEventListener('click', () => {
+            // 我的联系人按钮（原我的AI角色）
+            document.getElementById('myContactsBtn').addEventListener('click', () => {
                 document.getElementById('roleManagerModal').classList.add('active');
                 loadRoleList();
             });
@@ -1616,7 +1729,7 @@
                 const personality = document.getElementById('rolePersonality').value.trim();
                 
                 if (!name) {
-                    showToast('请输入角色名称', 'error');
+                    showToast('请输入联系人名称', 'error');
                     return;
                 }
                 
@@ -1657,7 +1770,7 @@
                 // 更新UI
                 loadChatList();
                 
-                showToast('角色保存成功');
+                showToast('联系人保存成功');
             });
             
             // 编辑动态封面
@@ -1707,7 +1820,7 @@
                 }
             });
             
-            // 编辑用户名
+            // 编辑用户名（动态页面）
             document.getElementById('userName').addEventListener('click', () => {
                 const newName = prompt('请输入用户名：', userInfo.name || '');
                 if (newName !== null && newName.trim()) {
@@ -1751,13 +1864,15 @@
                 }
             });
             
-            // 编辑状态 - 完全自定义
+            // 编辑状态 - 完全自定义，更新颜色
             document.getElementById('profileStatus').addEventListener('click', () => {
                 const currentStatus = userInfo.status || '点击设置状态';
                 const newStatus = prompt('请输入自定义状态：', currentStatus);
                 
                 if (newStatus !== null && newStatus.trim()) {
                     userInfo.status = newStatus.trim();
+                    // 更新状态颜色为随机浅色
+                    userInfo.statusColor = getRandomLightColor();
                     localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('状态已更新');
@@ -1768,28 +1883,8 @@
             const profileTagsContainer = document.getElementById('profileTagsContainer');
             profileTagsContainer.addEventListener('click', (e) => {
                 if (e.target.classList.contains('profile-tag')) {
-                    editTag(e.target.textContent);
-                }
-            });
-            
-            // 添加标签（点击标签容器空白处）
-            profileTagsContainer.addEventListener('dblclick', (e) => {
-                if (e.target === profileTagsContainer) {
-                    const newTag = prompt('添加新标签（最多3个）：');
-                    if (newTag !== null && newTag.trim()) {
-                        if (!userInfo.tags) {
-                            userInfo.tags = [];
-                        }
-                        
-                        if (userInfo.tags.length < 3) {
-                            userInfo.tags.push(newTag.trim());
-                            localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
-                            loadUserInfo();
-                            showToast('标签已添加');
-                        } else {
-                            showToast('最多只能添加3个标签', 'error');
-                        }
-                    }
+                    const tagIndex = Array.from(profileTagsContainer.children).indexOf(e.target);
+                    editTag(userInfo.tags[tagIndex], tagIndex);
                 }
             });
             
@@ -1825,6 +1920,9 @@
                     sendMessage();
                 }
             });
+            
+            // 触摸事件优化
+            document.addEventListener('touchstart', function() {}, {passive: true});
         }
         
         // 加载角色列表
@@ -1833,7 +1931,7 @@
             roleList.innerHTML = '';
             
             if (roles.length === 0) {
-                roleList.innerHTML = '<div style="text-align: center; color: #999; padding: 30px;">还没有创建角色</div>';
+                roleList.innerHTML = '<div style="text-align: center; color: #999; padding: 30px;">还没有创建联系人</div>';
                 return;
             }
             
