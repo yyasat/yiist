@@ -27,15 +27,19 @@
             background: white;
         }
         
+        /* 重新设计状态栏 */
         .status-bar {
             height: 44px;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 0 20px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
             flex-shrink: 0;
+            position: relative;
+            z-index: 100;
         }
         
         .time {
@@ -47,28 +51,52 @@
         .status-icons {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         
-        .signal-icon {
-            width: 20px;
+        .network-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .signal-bars {
+            display: flex;
+            align-items: flex-end;
             height: 12px;
-            position: relative;
+            gap: 2px;
         }
         
         .signal-bar {
-            position: absolute;
-            bottom: 0;
             width: 3px;
             background: #333;
             border-radius: 1px;
         }
         
-        .signal-bar:nth-child(1) { left: 0; height: 4px; }
-        .signal-bar:nth-child(2) { left: 4px; height: 6px; }
-        .signal-bar:nth-child(3) { left: 8px; height: 8px; }
-        .signal-bar:nth-child(4) { left: 12px; height: 10px; }
-        .signal-bar:nth-child(5) { left: 16px; height: 12px; }
+        .signal-bar:nth-child(1) { height: 5px; }
+        .signal-bar:nth-child(2) { height: 7px; }
+        .signal-bar:nth-child(3) { height: 9px; }
+        .signal-bar:nth-child(4) { height: 11px; }
+        
+        .wifi-icon {
+            width: 16px;
+            height: 16px;
+            position: relative;
+        }
+        
+        .wifi-icon::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border: 2px solid #333;
+            border-radius: 50%;
+            border-top-color: transparent;
+            border-right-color: transparent;
+        }
         
         .battery-container {
             display: flex;
@@ -358,63 +386,27 @@
             box-shadow: 0 8px 25px rgba(7, 193, 96, 0.4);
         }
         
-        /* 个人页面样式 - 重新设计 */
+        /* 个人页面样式 - 重新设计，头像居左上 */
         .profile-header {
-            height: 250px;
+            background: white;
+            padding: 40px 20px 30px;
             position: relative;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .profile-cover {
-            height: 100%;
-            width: 100%;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .profile-edit-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s;
-        }
-        
-        .profile-edit-btn:hover {
-            background: rgba(0, 0, 0, 0.7);
-            transform: translateY(-2px);
-        }
-        
-        .profile-info-area {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            text-align: center;
-            padding-bottom: 30px;
-            background: linear-gradient(transparent, rgba(0, 0, 0, 0.3));
+            border-bottom: 1px solid #eee;
+            margin-bottom: 20px;
         }
         
         .profile-avatar-container {
+            position: absolute;
+            top: -40px;
+            left: 20px;
             width: 100px;
             height: 100px;
             border-radius: 50%;
             border: 4px solid white;
             overflow: hidden;
-            margin: 0 auto 15px;
             background: #eee;
-            position: relative;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            z-index: 10;
         }
         
         .profile-avatar {
@@ -427,8 +419,8 @@
             position: absolute;
             bottom: -5px;
             right: -5px;
-            width: 36px;
-            height: 36px;
+            width: 32px;
+            height: 32px;
             background: #07c160;
             color: white;
             border-radius: 50%;
@@ -437,7 +429,7 @@
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             transition: all 0.3s;
         }
         
@@ -446,19 +438,84 @@
             box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
         }
         
-        .profile-name-display {
-            font-size: 24px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 8px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        .profile-info {
+            margin-left: 120px;
+            padding-top: 10px;
         }
         
-        .profile-id-display {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.9);
-            padding: 0 30px;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .profile-id {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        
+        .profile-signature {
+            font-size: 15px;
+            color: #444;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        .profile-status-tags {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .profile-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            background: #f0f9ff;
+            border-radius: 15px;
+            font-size: 13px;
+            color: #1890ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .profile-status:hover {
+            background: #e6f7ff;
+            transform: translateY(-1px);
+        }
+        
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #52c41a;
+        }
+        
+        .profile-tags {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .profile-tag {
+            padding: 4px 12px;
+            background: #f6ffed;
+            border: 1px solid #b7eb8f;
+            border-radius: 15px;
+            font-size: 12px;
+            color: #389e0d;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .profile-tag:hover {
+            background: #d9f7be;
+            transform: translateY(-1px);
         }
         
         .profile-menu {
@@ -811,17 +868,20 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- 重新设计的状态栏 -->
         <div class="status-bar">
             <div class="time" id="currentTime">00:00</div>
             <div class="status-icons">
-                <div class="signal-icon" id="signalIcon">
-                    <div class="signal-bar"></div>
-                    <div class="signal-bar"></div>
-                    <div class="signal-bar"></div>
-                    <div class="signal-bar"></div>
-                    <div class="signal-bar"></div>
+                <div class="network-status">
+                    <div class="signal-bars">
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                        <div class="signal-bar"></div>
+                    </div>
+                    <div class="wifi-icon"></div>
                 </div>
-                <div class="battery-container" id="batteryContainer">
+                <div class="battery-container">
                     <div class="battery-icon">
                         <div class="battery-level" id="batteryLevel"></div>
                     </div>
@@ -888,23 +948,28 @@
                 </button>
             </div>
             
-            <!-- 个人页面 - 重新设计 -->
+            <!-- 个人页面 - 头像居左上，新增签名和状态标签 -->
             <div class="page" id="profilePage">
                 <div class="profile-header">
-                    <div class="profile-cover" id="profileCover">
-                        <button class="profile-edit-btn" id="editProfileCoverBtn">
+                    <div class="profile-avatar-container">
+                        <img src="" alt="" class="profile-avatar" id="profileAvatar">
+                        <button class="profile-avatar-edit-btn" id="editProfileAvatarBtn">
                             <i class="fas fa-camera"></i>
-                            <span>编辑封面</span>
                         </button>
-                        <div class="profile-info-area">
-                            <div class="profile-avatar-container">
-                                <img src="" alt="" class="profile-avatar" id="profileAvatar">
-                                <button class="profile-avatar-edit-btn" id="editProfileAvatarBtn">
-                                    <i class="fas fa-camera"></i>
-                                </button>
+                    </div>
+                    <div class="profile-info">
+                        <div class="profile-name" id="profileName">用户</div>
+                        <div class="profile-id" id="profileId">ID: 点击设置</div>
+                        <div class="profile-signature" id="profileSignature">点击编辑个性签名</div>
+                        <div class="profile-status-tags">
+                            <div class="profile-status" id="profileStatus">
+                                <div class="status-indicator"></div>
+                                <span id="statusText">在线</span>
                             </div>
-                            <div class="profile-name-display" id="profileNameDisplay">用户</div>
-                            <div class="profile-id-display" id="profileIdDisplay">ID: 点击设置</div>
+                            <div class="profile-tags" id="profileTags">
+                                <div class="profile-tag">AI助手</div>
+                                <div class="profile-tag">开发者</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1025,6 +1090,7 @@
         // 初始化函数
         function init() {
             updateTime();
+            getRealBatteryStatus();
             loadUserInfo();
             loadChatList();
             loadMoments();
@@ -1032,9 +1098,6 @@
             
             // 每分钟更新时间
             setInterval(updateTime, 1000);
-            
-            // 获取真实手机电量
-            getRealBatteryStatus();
         }
         
         // 更新时间
@@ -1077,13 +1140,13 @@
             
             // 根据电量改变颜色
             if (battery.charging) {
-                batteryLevel.style.background = '#1890ff'; // 充电时显示蓝色
+                batteryLevel.style.background = '#1890ff';
             } else if (level <= 20) {
-                batteryLevel.style.background = '#f5222d'; // 红色
+                batteryLevel.style.background = '#f5222d';
             } else if (level <= 50) {
-                batteryLevel.style.background = '#fa8c16'; // 橙色
+                batteryLevel.style.background = '#fa8c16';
             } else {
-                batteryLevel.style.background = '#52c41a'; // 绿色
+                batteryLevel.style.background = '#52c41a';
             }
         }
         
@@ -1104,7 +1167,9 @@
                     avatar: '',
                     coverBackground: '',
                     userId: '',
-                    profileCover: ''
+                    profileSignature: '点击编辑个性签名',
+                    status: '在线',
+                    tags: ['AI助手', '开发者']
                 };
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             }
@@ -1114,17 +1179,39 @@
             document.getElementById('userBio').textContent = userInfo.bio;
             
             // 更新个人页面UI
-            document.getElementById('profileNameDisplay').textContent = userInfo.name;
-            document.getElementById('profileIdDisplay').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : 'ID: 点击设置';
+            document.getElementById('profileName').textContent = userInfo.name;
+            document.getElementById('profileId').textContent = userInfo.userId ? `ID: ${userInfo.userId}` : 'ID: 点击设置';
+            document.getElementById('profileSignature').textContent = userInfo.profileSignature || '点击编辑个性签名';
+            document.getElementById('statusText').textContent = userInfo.status || '在线';
+            
+            // 更新状态指示器颜色
+            const statusIndicator = document.getElementById('profileStatus').querySelector('.status-indicator');
+            if (userInfo.status === '在线') {
+                statusIndicator.style.background = '#52c41a';
+            } else if (userInfo.status === '忙碌') {
+                statusIndicator.style.background = '#fa8c16';
+            } else if (userInfo.status === '离线') {
+                statusIndicator.style.background = '#d9d9d9';
+            } else {
+                statusIndicator.style.background = '#1890ff';
+            }
+            
+            // 更新标签
+            const profileTags = document.getElementById('profileTags');
+            profileTags.innerHTML = '';
+            if (userInfo.tags && Array.isArray(userInfo.tags)) {
+                userInfo.tags.forEach(tag => {
+                    const tagElement = document.createElement('div');
+                    tagElement.className = 'profile-tag';
+                    tagElement.textContent = tag;
+                    tagElement.addEventListener('click', () => editTag(tag));
+                    profileTags.appendChild(tagElement);
+                });
+            }
             
             // 设置动态封面背景
             if (userInfo.coverBackground) {
                 document.getElementById('coverBackground').style.background = userInfo.coverBackground;
-            }
-            
-            // 设置个人封面背景
-            if (userInfo.profileCover) {
-                document.getElementById('profileCover').style.background = userInfo.profileCover;
             }
             
             // 设置头像
@@ -1370,6 +1457,20 @@
             input.click();
         }
         
+        // 编辑标签
+        function editTag(tag) {
+            const newTag = prompt('编辑标签内容：', tag);
+            if (newTag !== null && newTag.trim()) {
+                const index = userInfo.tags.indexOf(tag);
+                if (index !== -1) {
+                    userInfo.tags[index] = newTag.trim();
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                    loadUserInfo();
+                    showNotification('标签已更新');
+                }
+            }
+        }
+        
         // 设置事件监听器
         function setupEventListeners() {
             // 标签页切换
@@ -1507,19 +1608,7 @@
                 });
             });
             
-            // 编辑个人封面
-            document.getElementById('editProfileCoverBtn').addEventListener('click', () => {
-                uploadImage((imageData) => {
-                    if (imageData) {
-                        document.getElementById('profileCover').style.background = `url('${imageData}') center/cover no-repeat`;
-                        userInfo.profileCover = `url('${imageData}') center/cover no-repeat`;
-                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
-                        showNotification('个人封面已更新');
-                    }
-                });
-            });
-            
-            // 编辑动态头像
+            // 编辑头像
             document.getElementById('editAvatarBtn').addEventListener('click', () => {
                 uploadImage((imageData) => {
                     if (imageData) {
@@ -1543,7 +1632,7 @@
                 });
             });
             
-            // 编辑个性签名
+            // 编辑个性签名（动态页面）
             document.getElementById('userBio').addEventListener('click', () => {
                 const newBio = prompt('请输入个性签名：', userInfo.bio || '');
                 if (newBio !== null) {
@@ -1565,14 +1654,56 @@
                 }
             });
             
+            // 编辑个人签名
+            document.getElementById('profileSignature').addEventListener('click', () => {
+                const newSignature = prompt('请输入个性签名：', userInfo.profileSignature || '');
+                if (newSignature !== null) {
+                    userInfo.profileSignature = newSignature;
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                    loadUserInfo();
+                    showNotification('个性签名已更新');
+                }
+            });
+            
             // 编辑用户ID
-            document.getElementById('profileIdDisplay').addEventListener('click', () => {
+            document.getElementById('profileId').addEventListener('click', () => {
                 const newId = prompt('请输入用户ID：', userInfo.userId || '');
                 if (newId !== null) {
                     userInfo.userId = newId;
                     localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showNotification('用户ID已更新');
+                }
+            });
+            
+            // 编辑状态
+            document.getElementById('profileStatus').addEventListener('click', () => {
+                const statuses = ['在线', '忙碌', '离线', '隐身'];
+                const currentStatus = userInfo.status || '在线';
+                const newStatus = prompt(`选择状态（在线/忙碌/离线/隐身）：`, currentStatus);
+                
+                if (newStatus !== null && newStatus.trim() && statuses.includes(newStatus.trim())) {
+                    userInfo.status = newStatus.trim();
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                    loadUserInfo();
+                    showNotification('状态已更新');
+                }
+            });
+            
+            // 添加标签
+            const profileTags = document.getElementById('profileTags');
+            profileTags.addEventListener('click', (e) => {
+                if (e.target === profileTags) { // 点击标签容器的空白处
+                    const newTag = prompt('添加新标签：');
+                    if (newTag !== null && newTag.trim()) {
+                        if (!userInfo.tags) {
+                            userInfo.tags = [];
+                        }
+                        userInfo.tags.push(newTag.trim());
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                        loadUserInfo();
+                        showNotification('标签已添加');
+                    }
                 }
             });
             
