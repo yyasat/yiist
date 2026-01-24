@@ -689,7 +689,7 @@
             }
         }
         
-        /* 个人页面样式 */
+        /* 个人页面样式 - 调整布局 */
         .profile-header {
             background: var(--bg-white);
             padding: 30px 20px 25px;
@@ -782,16 +782,15 @@
         .profile-signature {
             font-size: 15px;
             color: var(--text-dark);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             line-height: 1.4;
             word-break: break-word;
         }
         
         .profile-status-tags-container {
             display: flex;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 12px;
         }
         
         .profile-status {
@@ -805,6 +804,7 @@
             font-weight: 500;
             min-width: 100px;
             text-align: center;
+            align-self: flex-start;
         }
         
         .profile-status:hover {
@@ -812,11 +812,12 @@
             opacity: 0.9;
         }
         
+        /* 个人页面标签放在状态下，水平排列 */
         .profile-tags-container {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            flex: 1;
+            margin-top: 5px;
         }
         
         .profile-tag {
@@ -1417,7 +1418,7 @@
                         </div>
                         <div>暂无联系人</div>
                         <div style="font-size: 14px; margin-top: 10px; color: #666;">
-                            点击右上角添加按钮创建AI角色
+                            点击右上角添加按钮创建联系人
                         </div>
                     </div>
                 </div>
@@ -1481,6 +1482,7 @@
                                 <div class="profile-status" id="profileStatus">
                                     <span id="statusText">点击设置状态</span>
                                 </div>
+                                <!-- 标签放在状态下，水平排列 -->
                                 <div class="profile-tags-container" id="profileTagsContainer">
                                     <!-- 标签将通过JS动态添加 -->
                                 </div>
@@ -1546,7 +1548,7 @@
             </div>
             <div class="modal-body">
                 <div class="form-group">
-                    <div class="form-label">联系人头像</div>
+                    <div class="form-label">头像</div>
                     <div style="text-align: center;">
                         <div id="roleAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">
                             <i class="fas fa-user"></i>
@@ -1558,12 +1560,26 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="roleName">联系人名称</label>
+                    <label class="form-label" for="roleName">名称</label>
                     <input type="text" class="form-input" id="roleName" placeholder="请输入联系人名称">
                 </div>
                 <div class="form-group">
-                    <label class="form-label" for="rolePersonality">联系人描述</label>
-                    <textarea class="form-input" id="rolePersonality" placeholder="描述联系人的性格、背景等" rows="4"></textarea>
+                    <label class="form-label" for="roleNote">备注</label>
+                    <input type="text" class="form-input" id="roleNote" placeholder="仅用户可见，AI不可见">
+                    <div style="font-size: 12px; color: #999; margin-top: 4px;">此备注仅用户可见，AI联系人不可见</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="rolePersonality">人物设定</label>
+                    <textarea class="form-input" id="rolePersonality" placeholder="描述角色的性格、背景、身份等设定。注意：AI会立即抓取此设定并完全基于此身份与您对话，不遵循此设定将被视为严重失误！" rows="4"></textarea>
+                    <div style="font-size: 12px; color: #f5222d; margin-top: 4px; font-weight: 500;">重要：AI会立即抓取此设定并完全基于此身份与您对话！</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="roleLanguageStyle">语言风格</label>
+                    <input type="text" class="form-input" id="roleLanguageStyle" placeholder="例如：温柔体贴、幽默风趣、严谨专业等">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="roleOfflineStyle">线下风格</label>
+                    <input type="text" class="form-input" id="roleOfflineStyle" placeholder="描述联系人线下互动时的风格">
                 </div>
                 <button class="btn-primary" id="saveRoleBtn">
                     保存联系人
@@ -1650,14 +1666,6 @@
         let currentMomentId = null;
         let comments = JSON.parse(localStorage.getItem('ai_comments')) || {};
         let likes = JSON.parse(localStorage.getItem('ai_likes')) || {};
-        
-        // 浅色系颜色数组
-        const lightColors = [
-            '#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec',
-            '#f1f8e9', '#fff8e1', '#e8eaf6', '#f9fbe7', '#fffde7',
-            '#e0f2f1', '#fff3e0', '#f3e5f5', '#e8f5e9', '#f1f8e9',
-            '#fff8e1', '#e0f7fa', '#fce4ec', '#f3e5f5', '#e8eaf6'
-        ];
         
         // 初始化函数
         function init() {
@@ -1757,25 +1765,6 @@
             batteryLevel.style.background = '#52c41a';
         }
         
-        // 获取随机浅色
-        function getRandomLightColor() {
-            return lightColors[Math.floor(Math.random() * lightColors.length)];
-        }
-        
-        // 获取对应的深色边框
-        function getDarkBorderColor(lightColor) {
-            // 根据浅色计算对应的深色
-            const colorMap = {
-                '#e3f2fd': '#1976d2', '#f3e5f5': '#7b1fa2', '#e8f5e8': '#2e7d32',
-                '#fff3e0': '#ef6c00', '#fce4ec': '#c2185b', '#f1f8e9': '#689f38',
-                '#fff8e1': '#ff8f00', '#e8eaf6': '#303f9f', '#f9fbe7': '#afb42b',
-                '#fffde7': '#ffb300', '#e0f2f1': '#00695c', '#e0f7fa': '#00838f',
-                '#e8f5e9': '#2e7d32', '#fff3e0': '#ef6c00', '#f3e5f5': '#7b1fa2',
-                '#e8eaf6': '#303f9f', '#fce4ec': '#c2185b', '#f1f8e9': '#689f38'
-            };
-            return colorMap[lightColor] || '#d9d9d9';
-        }
-        
         // 显示浮窗通知
         function showToast(message, type = 'success', duration = 2000) {
             const toast = document.getElementById('toast');
@@ -1817,17 +1806,17 @@
             
             // 确保颜色数据存在
             if (!userInfo.statusColor) {
-                userInfo.statusColor = getRandomLightColor();
+                userInfo.statusColor = '#e3f2fd';
             }
             if (!userInfo.tagColors || userInfo.tagColors.length !== userInfo.tags.length) {
-                userInfo.tagColors = userInfo.tags.map(() => getRandomLightColor());
+                userInfo.tagColors = ['#f3e5f5', '#e8f5e8', '#fff3e0'];
             }
             
             // 更新动态页面UI
             document.getElementById('userName').textContent = userInfo.name;
             document.getElementById('userBio').textContent = userInfo.bio;
             
-            // 更新动态页面的标签
+            // 更新动态页面的标签 - 带#号前缀
             const dynamicTagsContainer = document.getElementById('dynamicTagsContainer');
             dynamicTagsContainer.innerHTML = '';
             if (userInfo.tags && Array.isArray(userInfo.tags)) {
@@ -1835,9 +1824,15 @@
                     if (tag) {
                         const tagElement = document.createElement('div');
                         tagElement.className = 'dynamic-tag';
-                        tagElement.textContent = tag;
-                        tagElement.style.background = userInfo.tagColors[index] || getRandomLightColor();
-                        tagElement.style.borderColor = getDarkBorderColor(userInfo.tagColors[index]);
+                        
+                        // 如果标签不以#开头，自动添加
+                        const displayTag = tag.startsWith('#') ? tag : `#${tag}`;
+                        tagElement.textContent = displayTag;
+                        
+                        // 动态标签颜色自适应封面
+                        tagElement.style.background = 'rgba(255, 255, 255, 0.15)';
+                        tagElement.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+                        tagElement.style.color = 'rgba(255, 255, 255, 0.9)';
                         dynamicTagsContainer.appendChild(tagElement);
                     }
                 });
@@ -1852,10 +1847,10 @@
             // 更新状态样式
             const statusElement = document.getElementById('profileStatus');
             statusElement.style.background = userInfo.statusColor;
-            statusElement.style.borderColor = getDarkBorderColor(userInfo.statusColor);
-            statusElement.style.color = getDarkBorderColor(userInfo.statusColor);
+            statusElement.style.borderColor = '#d9d9d9';
+            statusElement.style.color = '#333';
             
-            // 更新标签
+            // 更新标签 - 带#号前缀
             const profileTagsContainer = document.getElementById('profileTagsContainer');
             profileTagsContainer.innerHTML = '';
             if (userInfo.tags && Array.isArray(userInfo.tags)) {
@@ -1863,10 +1858,13 @@
                     if (tag) {
                         const tagElement = document.createElement('div');
                         tagElement.className = 'profile-tag';
-                        tagElement.textContent = tag;
-                        tagElement.style.background = userInfo.tagColors[index] || getRandomLightColor();
-                        tagElement.style.borderColor = getDarkBorderColor(userInfo.tagColors[index]);
-                        tagElement.style.color = getDarkBorderColor(userInfo.tagColors[index]);
+                        
+                        // 如果标签不以#开头，自动添加
+                        const displayTag = tag.startsWith('#') ? tag : `#${tag}`;
+                        tagElement.textContent = displayTag;
+                        tagElement.style.background = userInfo.tagColors[index] || '#f3e5f5';
+                        tagElement.style.borderColor = '#d9d9d9';
+                        tagElement.style.color = '#333';
                         tagElement.addEventListener('click', () => editTag(tag, index));
                         profileTagsContainer.appendChild(tagElement);
                     }
@@ -1875,7 +1873,7 @@
                 // 确保至少有3个标签
                 while (userInfo.tags.length < 3) {
                     userInfo.tags.push(`标签${userInfo.tags.length + 1}`);
-                    userInfo.tagColors.push(getRandomLightColor());
+                    userInfo.tagColors.push('#f3e5f5');
                 }
             }
             
@@ -1910,7 +1908,7 @@
                         </div>
                         <div>暂无联系人</div>
                         <div style="font-size: 14px; margin-top: 10px; color: #666;">
-                            点击右上角添加按钮创建AI角色
+                            点击右上角添加按钮创建联系人
                         </div>
                     </div>
                 `;
@@ -2284,7 +2282,7 @@
             document.getElementById('momentActionsModal').classList.remove('active');
         }
         
-        // 打开聊天对话框
+        // 打开聊天对话框 - 增强版，基于人物设定
         function openChatDialog(roleId) {
             currentRoleId = roleId;
             const role = roles.find(r => r.id === roleId);
@@ -2296,13 +2294,22 @@
             // 加载聊天记录
             const history = chatHistories[roleId] || [];
             if (history.length === 0) {
+                // 基于人物设定生成欢迎语
+                let welcomeMessage = `你好！我是${role.name}。`;
+                
+                if (role.personality) {
+                    welcomeMessage += ` ${role.personality}。`;
+                }
+                
+                if (role.languageStyle) {
+                    welcomeMessage += ` 我的语言风格是：${role.languageStyle}。`;
+                }
+                
+                welcomeMessage += " 很高兴为你服务！";
+                
                 const welcomeMsg = document.createElement('div');
                 welcomeMsg.className = 'message';
-                welcomeMsg.innerHTML = `
-                    <div class="message-content">
-                        你好！我是${role.name}。${role.personality ? role.personality.substring(0, 100) + '...' : '很高兴为你服务！'}
-                    </div>
-                `;
+                welcomeMsg.innerHTML = `<div class="message-content">${welcomeMessage}</div>`;
                 document.getElementById('chatMessages').appendChild(welcomeMsg);
             } else {
                 history.forEach(msg => {
@@ -2324,7 +2331,7 @@
             }, 100);
         }
         
-        // 发送消息
+        // 发送消息 - 增强版，AI基于人物设定回复
         function sendMessage() {
             const input = document.getElementById('chatMessageInput');
             const message = input.value.trim();
@@ -2354,17 +2361,47 @@
             // 清空输入框
             input.value = '';
             
-            // 模拟AI回复
+            // 基于人物设定生成AI回复
             setTimeout(() => {
-                const responses = [
-                    `我理解你的意思："${message}"。作为一个${role.name}，我会尽力帮助你。`,
-                    `关于"${message}"，这是一个很好的话题！让我想想怎么回答你。`,
-                    `你说得对，"${message}"确实值得讨论。让我分享一下我的看法。`,
-                    `我收到了你的消息："${message}"。${role.personality ? '根据我的角色设定，' + role.personality.substring(0, 50) + '...' : '我很乐意和你聊天。'}`,
-                    `感谢你的分享。关于"${message}"，我可以从几个角度来分析...`
-                ];
+                // 构建基于人物设定的回复
+                let reply = '';
                 
-                const reply = responses[Math.floor(Math.random() * responses.length)];
+                if (role.personality) {
+                    // 基于人物设定生成回复
+                    const personalityKeywords = role.personality.toLowerCase();
+                    const languageStyle = role.languageStyle || '';
+                    
+                    // 根据人物设定生成不同的回复风格
+                    if (personalityKeywords.includes('温柔') || personalityKeywords.includes('体贴')) {
+                        reply = `我理解你的感受。作为${role.name}，我会温柔地回应你："${message}"。`;
+                    } else if (personalityKeywords.includes('幽默') || personalityKeywords.includes('风趣')) {
+                        reply = `哈哈，你这话说得真有意思！作为${role.name}，我觉得："${message}"这个话题可以这样看...`;
+                    } else if (personalityKeywords.includes('严谨') || personalityKeywords.includes('专业')) {
+                        reply = `从专业角度分析，关于"${message}"，我认为有以下几点需要考虑...`;
+                    } else if (personalityKeywords.includes('活泼') || personalityKeywords.includes('开朗')) {
+                        reply = `哇！这个话题真有趣！作为${role.name}，我超想和你聊聊"${message}"！`;
+                    } else {
+                        // 通用回复
+                        reply = `作为${role.name}，我对你提到的"${message}"很感兴趣。`;
+                        
+                        if (role.personality.length > 0) {
+                            reply += ` 基于我的设定：${role.personality.substring(0, 80)}...`;
+                        }
+                    }
+                    
+                    // 添加语言风格
+                    if (languageStyle) {
+                        reply += ` 我会用${languageStyle}的方式和你交流。`;
+                    }
+                } else {
+                    // 如果没有人物设定，使用通用回复
+                    reply = `我收到了你的消息："${message}"。作为${role.name}，我很乐意和你聊天。`;
+                }
+                
+                // 添加线下风格提示
+                if (role.offlineStyle) {
+                    reply += ` 在线下，我的风格是：${role.offlineStyle}。`;
+                }
                 
                 // 添加AI回复
                 const aiMsg = document.createElement('div');
@@ -2418,26 +2455,25 @@
         
         // 编辑标签
         function editTag(tag, index) {
-            const newTag = prompt('编辑标签内容：', tag);
+            // 如果标签以#开头，编辑时去掉#
+            const displayTag = tag.startsWith('#') ? tag.substring(1) : tag;
+            const newTag = prompt('编辑标签内容（以#开头或自定义）：', displayTag);
             if (newTag !== null && newTag.trim()) {
+                // 用户可以选择是否带#号
                 userInfo.tags[index] = newTag.trim();
-                // 更新标签颜色
-                userInfo.tagColors[index] = getRandomLightColor();
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                 loadUserInfo();
                 showToast('标签已更新');
             }
         }
         
-        // 编辑状态 - 完全自定义
+        // 编辑状态
         function editStatus() {
             const currentStatus = userInfo.status || '点击设置状态';
             const newStatus = prompt('请输入自定义状态：', currentStatus);
             
             if (newStatus !== null && newStatus.trim()) {
                 userInfo.status = newStatus.trim();
-                // 更新状态颜色
-                userInfo.statusColor = getRandomLightColor();
                 localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                 loadUserInfo();
                 showToast('状态已更新');
@@ -2504,7 +2540,10 @@
                 
                 // 重置表单
                 document.getElementById('roleName').value = '';
+                document.getElementById('roleNote').value = '';
                 document.getElementById('rolePersonality').value = '';
+                document.getElementById('roleLanguageStyle').value = '';
+                document.getElementById('roleOfflineStyle').value = '';
                 document.getElementById('roleAvatarPreview').innerHTML = '<i class="fas fa-user"></i>';
             });
             
@@ -2533,10 +2572,18 @@
             // 保存角色
             document.getElementById('saveRoleBtn').addEventListener('click', () => {
                 const name = document.getElementById('roleName').value.trim();
+                const note = document.getElementById('roleNote').value.trim();
                 const personality = document.getElementById('rolePersonality').value.trim();
+                const languageStyle = document.getElementById('roleLanguageStyle').value.trim();
+                const offlineStyle = document.getElementById('roleOfflineStyle').value.trim();
                 
                 if (!name) {
                     showToast('请输入联系人名称', 'error');
+                    return;
+                }
+                
+                if (!personality) {
+                    showToast('请填写人物设定，AI将基于此设定与您对话！', 'error');
                     return;
                 }
                 
@@ -2552,8 +2599,12 @@
                         roles[roleIndex] = {
                             ...roles[roleIndex],
                             name,
+                            note,
                             personality,
-                            avatar
+                            languageStyle,
+                            offlineStyle,
+                            avatar,
+                            updatedAt: Date.now()
                         };
                     }
                 } else {
@@ -2561,7 +2612,10 @@
                     const newRole = {
                         id: 'role_' + Date.now(),
                         name,
+                        note,
                         personality,
+                        languageStyle,
+                        offlineStyle,
                         avatar,
                         createdAt: Date.now()
                     };
@@ -2577,7 +2631,7 @@
                 // 更新UI
                 loadChatList();
                 
-                showToast('联系人保存成功');
+                showToast('联系人保存成功！AI将基于您的人物设定与您对话。');
             });
             
             // 编辑动态封面
@@ -2678,7 +2732,7 @@
             const profileTagsContainer = document.getElementById('profileTagsContainer');
             profileTagsContainer.addEventListener('dblclick', (e) => {
                 if (e.target === profileTagsContainer) {
-                    const newTag = prompt('添加新标签（最多3个）：');
+                    const newTag = prompt('添加新标签（最多3个，可带#号或自定义）：');
                     if (newTag !== null && newTag.trim()) {
                         if (!userInfo.tags) {
                             userInfo.tags = [];
@@ -2687,7 +2741,7 @@
                         
                         if (userInfo.tags.length < 3) {
                             userInfo.tags.push(newTag.trim());
-                            userInfo.tagColors.push(getRandomLightColor());
+                            userInfo.tagColors.push('#f3e5f5');
                             localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                             loadUserInfo();
                             showToast('标签已添加');
@@ -2793,7 +2847,7 @@
                         <div class="role-info">
                             <div class="role-name">${role.name}</div>
                             <div class="role-description">
-                                ${role.personality ? (role.personality.length > 50 ? role.personality.substring(0, 50) + '...' : role.personality) : '暂无描述'}
+                                ${role.personality ? (role.personality.length > 50 ? role.personality.substring(0, 50) + '...' : role.personality) : '暂无人物设定'}
                             </div>
                         </div>
                     </div>
