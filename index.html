@@ -1829,6 +1829,68 @@
                 transform: scale(1.05);
             }
         }
+        
+        /* 浮窗通知样式 */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .toast.success {
+            background: rgba(7, 193, 96, 0.9);
+        }
+        
+        .toast.error {
+            background: rgba(245, 34, 45, 0.9);
+        }
+        
+        .toast.info {
+            background: rgba(24, 144, 255, 0.9);
+        }
+        
+        /* 动态操作列表 */
+        .moment-actions-list {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .moment-action-item {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-dark);
+        }
+        
+        .moment-action-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .moment-action-item:last-child {
+            border-bottom: none;
+        }
+        
+        .moment-action-item.delete {
+            color: #f5222d;
+        }
     </style>
 </head>
 <body>
@@ -2932,7 +2994,7 @@
                 // 触摸事件处理
                 let startX = 0;
                 let currentX = 0;
-                let isDragging = false;
+                let isDragging = true;
                 
                 chatItem.addEventListener('touchstart', (e) => {
                     startX = e.touches[0].clientX;
@@ -3211,25 +3273,20 @@
                     commentItem.dataset.commentId = comment.id;
                     
                     // 构建评论头部
-                    let headerHTML = `<div classcomment-header">
-                            <div class="comment-author">${comment.author}</div>`;
+                    let headerHTML = `<div class="comment-header">
+                        <div class="comment-author">${comment.author}</div>
+                        ${comment.replyTo ? `<span class="comment-reply-to">回复 @${comment.replyTo}</span>` : ''}
+                        <div class="comment-time">${comment.time}</div>
+                    </div>
+                    <div class="comment-content">${comment.content}</div>
+                    <div class="comment-actions">
+                        <span class="comment-action reply-comment">回复</span>
+                        <span class="comment-action edit-comment">编辑</span>
+                        <span class="comment-action delete-comment">删除</span>
+                    </div>
+                `;
                     
-                    if (comment.replyTo) {
-                        headerHTML += `<span class="comment-reply-to">回复 ${comment.replyTo}</span>`;
-                    }
-                    
-                    headerHTML += `<div class="comment-time">${comment.time}</div>
-                        </div>`;
-                    
-                    commentItem.innerHTML = headerHTML + `
-                        <div class="comment-content">${comment.content}</div>
-                        <div class="comment-actions">
-                            <span class="comment-action reply-comment">回复</span>
-                            <span class="comment-action edit-comment">编辑</span>
-                            <span class="comment-action delete-comment">删除</span>
-                        </div>
-                        ${comment.reply ? `<div class="comment-reply">回复 ${comment.replyTo}: ${comment.reply}</div>` : ''}
-                    `;
+                    commentItem.innerHTML = headerHTML;
                     
                     // 评论操作事件
                     const replyBtn = commentItem.querySelector('.reply-comment');
@@ -3239,6 +3296,7 @@
                     replyBtn.addEventListener('click', (e) => {
                         e.stopPropagation();
                         document.getElementById('commentInput').placeholder = `回复 ${comment.author}: `;
+                        document.getElementById('commentInput').dataset.replyTo = comment.author;
                         document.getElementById('commentInput').focus();
                     });
                     
@@ -3319,18 +3377,12 @@
                 comments[currentMomentId] = [];
             }
             
-            // 检查是否是回复
-            let replyTo = null;
-            if (commentInput.placeholder.startsWith('回复')) {
-                replyTo = commentInput.placeholder.split('回复')[1].replace(':', '').trim();
-            }
-            
             const newComment = {
                 id: 'comment_' + Date.now(),
                 author: userInfo.name,
                 content: comment,
                 time: new Date().toLocaleString(),
-                replyTo: replyTo || null
+                replyTo: commentInput.dataset.replyTo || null
             };
             
             comments[currentMomentId].push(newComment);
@@ -3342,6 +3394,7 @@
             // 清空输入框
             commentInput.value = '';
             commentInput.placeholder = '请输入评论...';
+            delete commentInput.dataset.replyTo;
             
             // 更新评论列表
             const commentsList = document.getElementById('commentsList');
@@ -3349,17 +3402,12 @@
             commentItem.className = 'comment-item';
             commentItem.dataset.commentId = newComment.id;
             
-            let headerHTML = `<div class="comment-header">
-                        <div class="comment-author">${newComment.author}</div>`;
-            
-            if (newComment.replyTo) {
-                headerHTML += `<span class="comment-reply-to">回复 ${newComment.replyTo}</span>`;
-            }
-            
-            headerHTML += `<div class="comment-time">${newComment.time}</div>
-                    </div>`;
-            
-            commentItem.innerHTML = headerHTML + `
+            const headerHTML = `
+                <div class="comment-header">
+                    <div class="comment-author">${newComment.author}</div>
+                    ${newComment.replyTo ? `<span class="comment-reply-to">回复 @${newComment.replyTo}</span>` : ''}
+                    <div class="comment-time">${newComment.time}</div>
+                </div>
                 <div class="comment-content">${newComment.content}</div>
                 <div class="comment-actions">
                     <span class="comment-action reply-comment">回复</span>
@@ -3367,6 +3415,8 @@
                     <span class="comment-action delete-comment">删除</span>
                 </div>
             `;
+            
+            commentItem.innerHTML = headerHTML;
             
             // 评论操作事件
             const replyBtn = commentItem.querySelector('.reply-comment');
@@ -3376,6 +3426,7 @@
             replyBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 commentInput.placeholder = `回复 ${newComment.author}: `;
+                commentInput.dataset.replyTo = newComment.author;
                 commentInput.focus();
             });
             
@@ -3399,24 +3450,9 @@
             const moment = moments.find(m => m.id === currentMomentId);
             if (!moment) return;
             
-            // 使用浮窗编辑动态
-            showFloat('momentEditorFloat');
+            // 使用浮窗编辑器
             document.getElementById('momentEditorTextarea').value = moment.content;
-            document.getElementById('momentEditorTextarea').focus();
-            
-            // 设置发布按钮事件
-            const publishBtn = document.getElementById('publishMomentBtn');
-            publishBtn.onclick = () => {
-                const newContent = document.getElementById('momentEditorTextarea').value.trim();
-                if (newContent) {
-                    moment.content = newContent;
-                    moment.time = new Date().toLocaleString();
-                    localStorage.setItem('moments', JSON.stringify(moments));
-                    loadMoments();
-                    hideFloat('momentEditorFloat');
-                    showToast('动态已更新');
-                }
-            };
+            showFloat('momentEditorFloat');
             
             hideFloat('momentActionsFloat');
         }
@@ -3439,9 +3475,10 @@
                 }
                 
                 loadMoments();
-                hideFloat('momentActionsFloat');
                 showToast('动态已删除');
             }
+            
+            hideFloat('momentActionsFloat');
         }
         
         // 打开聊天对话框 - 没有初始欢迎语
@@ -3465,22 +3502,15 @@
             dialogTitleContainer.appendChild(noteSpan);
             dialogTitleContainer.appendChild(nameSpan);
             
-            // 清空聊天消息
+            // 清空聊天消息 - 没有初始欢迎语
             document.getElementById('chatMessages').innerHTML = '';
             
-            // 加载聊天记录 - 没有初始欢迎语
+            // 加载聊天记录
             const history = chatHistories[roleId] || [];
             if (history.length > 0) {
                 history.forEach(msg => {
                     addMessageToChat(msg.content, msg.role === 'user', msg.id, msg.time);
                 });
-            }
-            
-            // 应用联系人自定义的聊天背景
-            if (role.chatBackground) {
-                document.getElementById('chatMessages').style.background = `url('${role.chatBackground}') center/cover no-repeat`;
-            } else {
-                document.getElementById('chatMessages').style.background = '';
             }
             
             // 显示对话框
@@ -3512,16 +3542,17 @@
             messageContent.className = 'message-content';
             messageContent.textContent = content;
             
-            // 添加时间显示（24小时制）
-            const messageTime = document.createElement('div');
-            messageTime.className = 'message-time';
-            const time = timestamp ? new Date(timestamp) : new Date();
-            const hours = time.getHours().toString().padStart(2, '0');
-            const minutes = time.getMinutes().toString().padStart(2, '0');
-            messageTime.textContent = `${hours}:${minutes}`;
+            // 添加时间显示
+            const timeElement = document.createElement('div');
+            timeElement.className = 'message-time';
+            
+            const now = timestamp ? new Date(timestamp) : new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            timeElement.textContent = `${hours}:${minutes}`;
             
             contentContainer.appendChild(messageContent);
-            contentContainer.appendChild(messageTime);
+            contentContainer.appendChild(timeElement);
             
             // 添加编辑按钮（仅用户消息）
             if (isUser) {
@@ -3567,7 +3598,6 @@
             const textarea = document.getElementById('messageEditContent');
             
             textarea.value = currentContent;
-            textarea.dataset.originalContent = currentContent;
             showFloat('messageEditFloat');
             textarea.focus();
         }
@@ -3618,8 +3648,8 @@
             const role = roles.find(r => r.id === currentRoleId);
             if (!role) return;
             
-            // 添加用户消息（带时间）
-            const messageId = addMessageToChat(message, true, null, Date.now());
+            // 添加用户消息
+            const messageId = addMessageToChat(message, true);
             
             // 保存消息历史
             if (!chatHistories[currentRoleId]) {
@@ -3644,8 +3674,8 @@
                 // 基于人物设定和API模型生成回复
                 let reply = generateContactReply(message, role, contactModel);
                 
-                // 添加联系人回复（带时间）
-                const replyMessageId = addMessageToChat(reply, false, null, Date.now());
+                // 添加联系人回复
+                const replyMessageId = addMessageToChat(reply, false);
                 
                 // 保存联系人回复
                 chatHistories[currentRoleId].push({
@@ -3670,13 +3700,11 @@
         function generateContactReply(message, role, model) {
             let reply = '';
             
-            // 检查是否有自定义API设置
-            const customSettings = JSON.parse(localStorage.getItem('custom_api_settings')) || {};
-            
-            if (model === 'custom' && customSettings.apiUrl && customSettings.apiKey) {
-                reply = `（自定义API）作为${role.name}，我已经收到您的消息："${message}"。`;
+            // 如果没有人物设定，作为只听指令的机器人
+            if (!role.personality || role.personality.trim() === '') {
+                reply = `收到指令："${message}"。正在处理中...`;
             } else {
-                // 基于预设API模型生成不同的回复风格
+                // 基于API模型生成不同的回复风格
                 switch(model) {
                     case 'gpt-4':
                         reply = `（GPT-4模型）作为${role.name}，我对您的问题"${message}"进行了深入分析。`;
@@ -3687,13 +3715,15 @@
                     case 'ernie':
                         reply = `（文心一言模型）作为${role.name}，我来回答您的问题："${message}"。`;
                         break;
+                    case 'custom':
+                        const customSettings = JSON.parse(localStorage.getItem('custom_api_settings')) || {};
+                        reply = `（${customSettings.modelName || '自定义API'}）作为${role.name}，我收到了您的消息："${message}"。`;
+                        break;
                     default: // gpt-3.5
                         reply = `作为${role.name}，我对您提到的"${message}"很感兴趣。`;
                 }
-            }
-            
-            // 添加人物设定相关的内容（如果存在）
-            if (role.personality && role.personality.trim()) {
+                
+                // 添加人物设定相关的内容
                 const personalityKeywords = role.personality.toLowerCase();
                 
                 if (personalityKeywords.includes('温柔') || personalityKeywords.includes('体贴')) {
@@ -3710,9 +3740,6 @@
                 if (role.personality.length > 0) {
                     reply += ` ${role.personality.substring(0, 80)}...`;
                 }
-            } else {
-                // 如果没有人物设定，作为只听指令的机器人
-                reply += ` 我将根据您的指令进行回复。`;
             }
             
             // 添加语言风格
@@ -3721,9 +3748,7 @@
             }
             
             // 添加模型特定内容
-            if (model === 'custom') {
-                reply += ` [使用自定义API模型生成]`;
-            } else {
+            if (model !== 'custom') {
                 reply += ` [使用${apiModels[model].name}模型生成]`;
             }
             
@@ -3827,29 +3852,129 @@
         function testApiConnection() {
             const apiUrl = document.getElementById('customApiUrl').value.trim();
             const apiKey = document.getElementById('customApiKey').value.trim();
+            const modelName = document.getElementById('customModelName').value.trim();
             
-            if (!apiUrl || !apiKey) {
-                showToast('请输入API地址和密钥', 'error');
+            if (!apiUrl || !apiKey || !modelName) {
+                showToast('请填写完整的API信息', 'error');
                 return;
             }
             
+            // 这里应该发送一个测试请求到API
+            // 由于安全原因，我们只是模拟一个测试
             showToast('正在测试API连接...', 'info');
             
-            // 模拟API测试（实际应用中应发送真实请求）
             setTimeout(() => {
                 // 保存自定义API设置
                 const customSettings = {
-                    apiUrl: apiUrl,
-                    apiKey: apiKey,
-                    modelName: document.getElementById('customModelName').value.trim(),
+                    apiUrl,
+                    apiKey,
+                    modelName,
                     temperature: parseFloat(document.getElementById('temperatureSlider').value),
                     maxTokens: parseInt(document.getElementById('maxTokens').value) || 2048
                 };
                 
                 localStorage.setItem('custom_api_settings', JSON.stringify(customSettings));
-                
-                showToast('API连接测试成功！', 'success');
+                showToast('API连接测试成功！设置已保存。');
             }, 1500);
+        }
+        
+        // 发布动态
+        function publishMoment() {
+            const textarea = document.getElementById('momentEditorTextarea');
+            const content = textarea.value.trim();
+            
+            if (!content) {
+                showToast('请输入动态内容', 'error');
+                return;
+            }
+            
+            const newMoment = {
+                id: 'moment_' + Date.now(),
+                content: content,
+                time: new Date().toLocaleString(),
+                author: userInfo.name
+            };
+            
+            moments.push(newMoment);
+            localStorage.setItem('moments', JSON.stringify(moments));
+            loadMoments();
+            
+            hideFloat('momentEditorFloat');
+            showToast('动态发布成功');
+        }
+        
+        // 动态编辑器工具功能
+        function setupMomentEditorTools() {
+            const textarea = document.getElementById('momentEditorTextarea');
+            let fontSize = 16;
+            
+            // 导入照片
+            document.getElementById('importPhotoBtn').addEventListener('click', () => {
+                uploadImage((imageData) => {
+                    if (imageData) {
+                        const cursorPos = textarea.selectionStart;
+                        const textBefore = textarea.value.substring(0, cursorPos);
+                        const textAfter = textarea.value.substring(cursorPos);
+                        textarea.value = textBefore + `\n[图片]${imageData.substring(0, 50)}...\n` + textAfter;
+                        showToast('图片已插入');
+                    }
+                });
+            });
+            
+            // 放大字体
+            document.getElementById('increaseFontBtn').addEventListener('click', () => {
+                fontSize = Math.min(fontSize + 2, 32);
+                textarea.style.fontSize = fontSize + 'px';
+            });
+            
+            // 缩小字体
+            document.getElementById('decreaseFontBtn').addEventListener('click', () => {
+                fontSize = Math.max(fontSize - 2, 12);
+                textarea.style.fontSize = fontSize + 'px';
+            });
+            
+            // 加粗
+            document.getElementById('boldTextBtn').addEventListener('click', () => {
+                wrapSelectedText(textarea, '**', '**');
+            });
+            
+            // 斜体
+            document.getElementById('italicTextBtn').addEventListener('click', () => {
+                wrapSelectedText(textarea, '*', '*');
+            });
+            
+            // 下划线
+            document.getElementById('underlineTextBtn').addEventListener('click', () => {
+                wrapSelectedText(textarea, '<u>', '</u>');
+            });
+            
+            // 高亮
+            document.getElementById('highlightTextBtn').addEventListener('click', () => {
+                wrapSelectedText(textarea, '==', '==');
+            });
+            
+            // 添加表情
+            document.getElementById('addEmojiBtn').addEventListener('click', () => {
+                const emojis = ['😊', '😂', '😍', '👍', '❤️', '🎉', '🔥', '⭐', '💯', '👏'];
+                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+                const cursorPos = textarea.selectionStart;
+                const textBefore = textarea.value.substring(0, cursorPos);
+                const textAfter = textarea.value.substring(cursorPos);
+                textarea.value = textBefore + randomEmoji + textAfter;
+            });
+        }
+        
+        // 包装选中文本
+        function wrapSelectedText(textarea, before, after) {
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const selectedText = textarea.value.substring(start, end);
+            const newText = before + selectedText + after;
+            
+            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
+            textarea.selectionStart = start;
+            textarea.selectionEnd = start + newText.length;
+            textarea.focus();
         }
         
         // 设置事件监听器
@@ -3865,16 +3990,17 @@
                 touchEndY = e.changedTouches[0].clientY;
             });
             
-            // 点击浮窗外关闭浮窗
+            // 点击外部关闭浮窗
             document.addEventListener('click', (e) => {
-                // 聊天编辑浮窗特殊处理
-                if (!e.target.closest('#chatEditFloat') && !e.target.closest('#dialogMoreBtn')) {
+                // 关闭聊天编辑浮窗
+                if (!e.target.closest('.chat-edit-float') && !e.target.closest('.dialog-more-btn')) {
                     document.getElementById('chatEditFloat').classList.remove('active');
                 }
                 
-                // 其他浮窗
-                if (e.target.classList.contains('float-window')) {
-                    e.target.classList.remove('active');
+                // 关闭其他浮窗
+                if (!e.target.closest('.float-window') && !e.target.closest('.moment-action-btn') && 
+                    !e.target.closest('.moment-more-btn') && !e.target.closest('.add-moment-btn')) {
+                    hideAllFloats();
                 }
             });
             
@@ -3951,9 +4077,8 @@
     padding: 12px 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }`;
-                document.getElementById('chatBackgroundPreview').innerHTML = '<span>暂无背景</span>';
-                document.getElementById('chatBackgroundPreview').style.background = '#f5f5f5';
                 document.getElementById('roleAvatarPreview').innerHTML = '<i class="fas fa-user"></i>';
+                document.getElementById('chatBackgroundPreview').innerHTML = '<span>暂无背景</span>';
             });
             
             // 关闭联系人编辑器
@@ -3989,9 +4114,8 @@
                     const reader = new FileReader();
                     reader.onload = (e) => {
                         const preview = document.getElementById('chatBackgroundPreview');
+                        preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
                         preview.style.background = `url('${e.target.result}') center/cover no-repeat`;
-                        preview.innerHTML = '';
-                        showToast('背景已导入');
                     };
                     reader.readAsDataURL(file);
                 }
@@ -4021,9 +4145,8 @@
                 
                 // 获取聊天背景
                 const bgPreview = document.getElementById('chatBackgroundPreview');
-                const chatBackground = bgPreview.style.backgroundImage && bgPreview.style.backgroundImage !== 'none' 
-                    ? bgPreview.style.backgroundImage.slice(4, -1).replace(/"/g, '') 
-                    : '';
+                const bgImg = bgPreview.querySelector('img');
+                const chatBackground = bgImg ? bgImg.src : '';
                 
                 if (editingRoleId) {
                     // 更新现有联系人
@@ -4033,7 +4156,7 @@
                             ...roles[roleIndex],
                             name,
                             note,
-                            personality, // 人物设定可选，可以为空
+                            personality, // 可以为空
                             languageStyle,
                             offlineStyle,
                             customCss: cssCode,
@@ -4048,7 +4171,7 @@
                         id: 'contact_' + Date.now(),
                         name,
                         note,
-                        personality, // 人物设定可选，可以为空
+                        personality, // 可以为空
                         languageStyle,
                         offlineStyle,
                         customCss: cssCode,
@@ -4169,104 +4292,22 @@
             // 编辑状态
             document.getElementById('profileStatus').addEventListener('click', editStatus);
             
-            // 添加动态按钮
+            // 添加动态
             document.getElementById('addMomentBtn').addEventListener('click', () => {
-                showFloat('momentEditorFloat');
                 document.getElementById('momentEditorTextarea').value = '';
-                document.getElementById('momentEditorTextarea').focus();
-                
-                // 设置发布按钮事件
-                const publishBtn = document.getElementById('publishMomentBtn');
-                publishBtn.onclick = () => {
-                    const content = document.getElementById('momentEditorTextarea').value.trim();
-                    if (content) {
-                        const newMoment = {
-                            id: 'moment_' + Date.now(),
-                            content: content,
-                            time: new Date().toLocaleString(),
-                            author: userInfo.name
-                        };
-                        
-                        moments.push(newMoment);
-                        localStorage.setItem('moments', JSON.stringify(moments));
-                        loadMoments();
-                        hideFloat('momentEditorFloat');
-                        showToast('动态发布成功');
-                    }
-                };
-            });
-            
-            // 动态编辑工具栏按钮
-            document.getElementById('importPhotoBtn').addEventListener('click', () => {
-                uploadImage((imageData) => {
-                    const textarea = document.getElementById('momentEditorTextarea');
-                    textarea.value += `\n[图片: ${imageData.substring(0, 50)}...]`;
-                    showToast('图片已导入（模拟）');
-                });
-            });
-            
-            document.getElementById('increaseFontBtn').addEventListener('click', () => {
-                const textarea = document.getElementById('momentEditorTextarea');
-                const currentSize = parseInt(window.getComputedStyle(textarea).fontSize) || 16;
-                textarea.style.fontSize = (currentSize + 2) + 'px';
-            });
-            
-            document.getElementById('decreaseFontBtn').addEventListener('click', () => {
-                const textarea = document.getElementById('momentEditorTextarea');
-                const currentSize = parseInt(window.getComputedStyle(textarea).fontSize) || 16;
-                textarea.style.fontSize = Math.max(12, currentSize - 2) + 'px';
-            });
-            
-            // 文本格式化按钮（模拟功能）
-            ['boldTextBtn', 'italicTextBtn', 'underlineTextBtn', 'highlightTextBtn', 'addEmojiBtn'].forEach(btnId => {
-                document.getElementById(btnId).addEventListener('click', () => {
-                    const textarea = document.getElementById('momentEditorTextarea');
-                    const start = textarea.selectionStart;
-                    const end = textarea.selectionEnd;
-                    const selectedText = textarea.value.substring(start, end);
-                    
-                    let wrappedText = selectedText;
-                    switch(btnId) {
-                        case 'boldTextBtn':
-                            wrappedText = `**${selectedText}**`;
-                            break;
-                        case 'italicTextBtn':
-                            wrappedText = `*${selectedText}*`;
-                            break;
-                        case 'underlineTextBtn':
-                            wrappedText = `__${selectedText}__`;
-                            break;
-                        case 'highlightTextBtn':
-                            wrappedText = `==${selectedText}==`;
-                            break;
-                        case 'addEmojiBtn':
-                            wrappedText = `${selectedText} 😊`;
-                            break;
-                    }
-                    
-                    textarea.value = textarea.value.substring(0, start) + wrappedText + textarea.value.substring(end);
-                    textarea.focus();
-                    textarea.setSelectionRange(start + wrappedText.length, start + wrappedText.length);
-                });
-            });
-            
-            // 关闭动态编辑器
-            document.getElementById('closeMomentEditorFloat').addEventListener('click', () => {
-                hideFloat('momentEditorFloat');
+                showFloat('momentEditorFloat');
             });
             
             // 返回聊天列表
             document.getElementById('backToChatList').addEventListener('click', () => {
                 document.getElementById('chatDialog').classList.remove('active');
-                // 重置聊天背景
-                document.getElementById('chatMessages').style.background = '';
             });
             
             // 聊天对话框更多按钮
             document.getElementById('dialogMoreBtn').addEventListener('click', (e) => {
                 e.stopPropagation();
-                const editFloat = document.getElementById('chatEditFloat');
-                editFloat.classList.toggle('active');
+                const float = document.getElementById('chatEditFloat');
+                float.classList.toggle('active');
             });
             
             // 在聊天中编辑联系人
@@ -4295,14 +4336,14 @@
                         // 设置背景预览
                         const bgPreview = document.getElementById('chatBackgroundPreview');
                         if (role.chatBackground) {
+                            bgPreview.innerHTML = `<img src="${role.chatBackground}" style="width: 100%; height: 100%; object-fit: cover;">`;
                             bgPreview.style.background = `url('${role.chatBackground}') center/cover no-repeat`;
-                            bgPreview.innerHTML = '';
                         } else {
-                            bgPreview.style.background = '#f5f5f5';
                             bgPreview.innerHTML = '<span>暂无背景</span>';
+                            bgPreview.style.background = '#f5f5f5';
                         }
                         
-                        // 打开编辑器（在聊天界面内）
+                        // 打开编辑器
                         document.getElementById('chatEditFloat').classList.remove('active');
                         showFloat('roleEditorFloat');
                     }
@@ -4319,7 +4360,7 @@
                         // 填充CSS编辑器
                         document.getElementById('chatCssEditor').value = role.customCss || '';
                         
-                        // 打开编辑器（在聊天界面内）
+                        // 打开编辑器
                         document.getElementById('chatEditFloat').classList.remove('active');
                         showFloat('roleEditorFloat');
                     }
@@ -4347,13 +4388,6 @@
             document.getElementById('editMomentBtn').addEventListener('click', editMoment);
             document.getElementById('deleteMomentBtn').addEventListener('click', deleteMoment);
             
-            // 关闭动态操作浮窗
-            document.getElementById('momentActionsFloat').addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) {
-                    hideFloat('momentActionsFloat');
-                }
-            });
-            
             // 点赞浮窗关闭
             document.getElementById('closeLikesFloat').addEventListener('click', () => {
                 hideFloat('likesFloat');
@@ -4380,6 +4414,16 @@
             });
             
             document.getElementById('saveMessageEditBtn').addEventListener('click', saveMessageEdit);
+            
+            // 动态编辑浮窗事件
+            document.getElementById('closeMomentEditorFloat').addEventListener('click', () => {
+                hideFloat('momentEditorFloat');
+            });
+            
+            document.getElementById('publishMomentBtn').addEventListener('click', publishMoment);
+            
+            // 动态编辑器工具设置
+            setupMomentEditorTools();
             
             // 标签编辑浮窗事件
             document.getElementById('closeTagEditFloat').addEventListener('click', () => {
@@ -4411,7 +4455,7 @@
                     // 更新显示
                     document.getElementById('currentModelDisplay').textContent = apiModels[selectedApiModel].name;
                     
-                    // 加载自定义API设置
+                    // 显示/隐藏自定义API设置
                     loadApiModelSelection();
                     
                     showToast(`已选择${apiModels[selectedApiModel].name}模型`);
@@ -4419,18 +4463,33 @@
             });
             
             // 温度滑块
-            document.getElementById('temperatureSlider').addEventListener('input', (e) => {
-                document.getElementById('temperatureValue').textContent = e.target.value;
+            const tempSlider = document.getElementById('temperatureSlider');
+            const tempValue = document.getElementById('temperatureValue');
+            tempSlider.addEventListener('input', () => {
+                tempValue.textContent = tempSlider.value;
             });
-            
-            // 测试API连接
-            document.getElementById('testApiConnectionBtn').addEventListener('click', testApiConnection);
             
             // 应用API模型到所有联系人
             document.getElementById('applyToAllBtn').addEventListener('click', applyApiModelToAll);
             
             // 应用API模型到选中联系人
             document.getElementById('applyToSelectedBtn').addEventListener('click', applyApiModelToSelected);
+            
+            // 测试API连接
+            document.getElementById('testApiConnectionBtn').addEventListener('click', testApiConnection);
+            
+            // 点击页面其他区域关闭浮窗
+            document.addEventListener('click', (e) => {
+                // 如果点击的不是浮窗内容，关闭所有浮窗
+                if (!e.target.closest('.float-window') && 
+                    !e.target.closest('.add-role-btn') &&
+                    !e.target.closest('.add-moment-btn') &&
+                    !e.target.closest('.moment-action-btn') &&
+                    !e.target.closest('.moment-more-btn') &&
+                    !e.target.closest('.dialog-more-btn')) {
+                    hideAllFloats();
+                }
+            });
         }
         
         // 加载联系人列表
