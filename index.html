@@ -30,13 +30,6 @@
             --radius-small: 8px;
             --radius-medium: 12px;
             --radius-large: 16px;
-            
-            /* 聊天样式变量 */
-            --chat-bg: #f5f5f5;
-            --user-bubble: #07c160;
-            --contact-bubble: #ffffff;
-            --user-text: #ffffff;
-            --contact-text: #333333;
         }
         
         body {
@@ -311,16 +304,6 @@
         
         .chat-item.active {
             background: #f0fff5;
-        }
-        
-        /* 置顶标识 */
-        .pinned-indicator {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            color: #fa8c16;
-            font-size: 12px;
-            z-index: 3;
         }
         
         .chat-item-actions {
@@ -623,7 +606,6 @@
             transition: all 0.3s;
             padding: 5px 10px;
             border-radius: var(--radius-small);
-            position: relative;
         }
         
         .moment-action-btn:hover {
@@ -707,7 +689,7 @@
             }
         }
         
-        /* 个人页面样式 - 调整布局 */
+        /* 个人页面样式 */
         .profile-header {
             background: var(--bg-white);
             padding: 30px 20px 25px;
@@ -800,15 +782,16 @@
         .profile-signature {
             font-size: 15px;
             color: var(--text-dark);
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             line-height: 1.4;
             word-break: break-word;
         }
         
         .profile-status-tags-container {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
         }
         
         .profile-status {
@@ -822,7 +805,6 @@
             font-weight: 500;
             min-width: 100px;
             text-align: center;
-            align-self: flex-start;
         }
         
         .profile-status:hover {
@@ -830,13 +812,11 @@
             opacity: 0.9;
         }
         
-        /* 个人页面标签放在状态下，水平排列 */
         .profile-tags-container {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
-            margin-top: 5px;
-            align-items: center;
+            flex: 1;
         }
         
         .profile-tag {
@@ -853,23 +833,6 @@
         .profile-tag:hover {
             transform: translateY(-1px);
             opacity: 0.9;
-        }
-        
-        /* 标签井号开关 */
-        .tag-hash-toggle {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-left: 10px;
-            font-size: 12px;
-            color: var(--text-light);
-            cursor: pointer;
-        }
-        
-        .tag-hash-checkbox {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
         }
         
         .profile-menu {
@@ -917,47 +880,62 @@
             font-weight: 500;
         }
         
-        /* 浮窗样式 - 替换弹窗 */
-        .float-window {
+        /* 弹窗样式 */
+        .modal {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) scale(0.9);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
             background: var(--bg-white);
             border-radius: var(--radius-large);
+            width: 100%;
+            max-width: 500px;
+            max-height: 80vh;
+            overflow-y: auto;
             box-shadow: var(--shadow-heavy);
-            z-index: 1000;
-            padding: 0;
-            max-width: 90%;
-            max-height: 85vh;
-            overflow: hidden;
-            opacity: 0;
-            pointer-events: none;
-            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            animation: modalSlideIn 0.3s ease;
         }
         
-        .float-window.active {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-            pointer-events: auto;
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        .float-header {
+        .modal-header {
             padding: 20px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--bg-white);
         }
         
-        .float-title {
+        .modal-title {
             font-size: 18px;
             font-weight: 600;
             color: var(--text-dark);
         }
         
-        .float-close {
+        .modal-close {
             background: none;
             border: none;
             font-size: 20px;
@@ -965,78 +943,153 @@
             cursor: pointer;
             padding: 5px;
             transition: all 0.3s;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
         }
         
-        .float-close:hover {
-            background: var(--bg-light);
+        .modal-close:hover {
             color: var(--text-dark);
         }
         
-        .float-body {
+        .modal-body {
             padding: 20px;
-            max-height: 60vh;
-            overflow-y: auto;
         }
         
-        /* 动态编辑浮窗 */
-        .moment-editor-float {
-            width: 90%;
-            max-width: 600px;
-            height: 80vh;
+        /* 动态操作弹窗 */
+        .moment-actions-modal .modal-content {
+            max-width: 300px;
+        }
+        
+        .moment-actions-list {
             display: flex;
             flex-direction: column;
         }
         
-        .moment-editor-toolbar {
-            display: flex;
-            gap: 10px;
-            padding: 15px 20px;
+        .moment-action-item {
+            padding: 16px 20px;
             border-bottom: 1px solid var(--border-color);
-            background: var(--bg-light);
-            flex-wrap: wrap;
-        }
-        
-        .editor-tool-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-small);
-            background: var(--bg-white);
-            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
+            gap: 12px;
             color: var(--text-dark);
-            transition: all 0.3s;
         }
         
-        .editor-tool-btn:hover {
-            background: var(--primary-color);
-            color: var(--bg-white);
+        .moment-action-item:hover {
+            background: var(--bg-light);
+        }
+        
+        .moment-action-item:last-child {
+            border-bottom: none;
+        }
+        
+        .moment-action-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .moment-action-item.delete {
+            color: #f5222d;
+        }
+        
+        /* 评论弹窗 */
+        .comments-modal .modal-content {
+            max-width: 400px;
+        }
+        
+        .comments-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        
+        .comment-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .comment-author {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+        }
+        
+        .comment-content {
+            color: var(--text-dark);
+            line-height: 1.4;
+        }
+        
+        .comment-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .comment-input-field {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .comment-input-field:focus {
             border-color: var(--primary-color);
         }
         
-        .moment-editor-content {
-            flex: 1;
-            padding: 20px;
+        .comment-send-btn {
+            padding: 10px 20px;
+            background: var(--primary-color);
+            color: var(--bg-white);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
         }
         
-        .moment-editor-textarea {
-            width: 100%;
-            height: 100%;
-            border: none;
-            outline: none;
+        .comment-send-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* 浮窗通知样式 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 18px 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow-heavy);
+            z-index: 1001;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            pointer-events: none;
+            color: var(--bg-white);
             font-size: 16px;
-            line-height: 1.6;
-            resize: none;
-            font-family: inherit;
-            background: transparent;
+            font-weight: 500;
+            text-align: center;
+            min-width: 150px;
+            max-width: 80%;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+        
+        .toast.success {
+            background: rgba(7, 193, 96, 0.9);
+        }
+        
+        .toast.error {
+            background: rgba(245, 34, 45, 0.9);
+        }
+        
+        .toast.info {
+            background: rgba(24, 144, 255, 0.9);
         }
         
         /* 聊天对话框样式 */
@@ -1080,106 +1133,18 @@
             color: var(--primary-color);
         }
         
-        .dialog-title-container {
+        .dialog-title {
             flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .dialog-title-note {
             font-weight: 600;
             font-size: 16px;
             color: var(--text-dark);
-        }
-        
-        .dialog-title-name {
-            font-size: 12px;
-            color: var(--text-lighter);
-            font-style: italic;
-        }
-        
-        .dialog-more-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: var(--text-dark);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .dialog-more-btn:hover {
-            background: var(--bg-light);
-        }
-        
-        /* 聊天对话框编辑浮窗 */
-        .chat-edit-float {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            width: 300px;
-            background: var(--bg-white);
-            border-radius: var(--radius-medium);
-            box-shadow: var(--shadow-heavy);
-            z-index: 1003;
-            display: none;
-            overflow: hidden;
-        }
-        
-        .chat-edit-float.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-        
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .chat-edit-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-dark);
-        }
-        
-        .chat-edit-item:hover {
-            background: var(--bg-light);
-        }
-        
-        .chat-edit-item:last-child {
-            border-bottom: none;
-        }
-        
-        .chat-edit-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        .chat-edit-item.delete {
-            color: #f5222d;
         }
         
         .chat-messages {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
-            background: var(--chat-bg);
+            background: var(--bg-light);
             -webkit-overflow-scrolling: touch;
         }
         
@@ -1187,7 +1152,6 @@
             margin-bottom: 15px;
             display: flex;
             animation: fadeIn 0.3s ease;
-            position: relative;
         }
         
         @keyframes fadeIn {
@@ -1199,70 +1163,20 @@
             justify-content: flex-end;
         }
         
-        .message-content-container {
-            max-width: 70%;
-            display: flex;
-            flex-direction: column;
-        }
-        
         .message-content {
+            max-width: 70%;
             padding: 12px 16px;
             border-radius: 18px;
+            background: var(--bg-white);
             font-size: 14px;
             line-height: 1.5;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             word-break: break-word;
-            position: relative;
-            cursor: pointer;
-        }
-        
-        .message.contact .message-content {
-            background: var(--contact-bubble);
-            color: var(--contact-text);
         }
         
         .message.user .message-content {
-            background: var(--user-bubble);
-            color: var(--user-text);
-        }
-        
-        .message-time {
-            font-size: 11px;
-            color: var(--text-lighter);
-            margin-top: 4px;
-            padding: 0 8px;
-        }
-        
-        .message.user .message-time {
-            text-align: right;
-        }
-        
-        .message-edit-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            right: -40px;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.1);
-            border: none;
-            color: var(--text-light);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            opacity: 0;
-            transition: all 0.3s;
-            font-size: 12px;
-        }
-        
-        .message:hover .message-edit-btn {
-            opacity: 1;
-        }
-        
-        .message-edit-btn:hover {
-            background: rgba(0, 0, 0, 0.2);
+            background: var(--primary-color);
+            color: var(--bg-white);
         }
         
         .chat-input {
@@ -1334,22 +1248,6 @@
             border-color: var(--primary-color);
         }
         
-        .form-textarea {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--radius-small);
-            font-size: 14px;
-            transition: border-color 0.3s;
-            resize: vertical;
-            min-height: 80px;
-        }
-        
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
         .btn-primary {
             width: 100%;
             padding: 14px;
@@ -1378,7 +1276,6 @@
             cursor: pointer;
             transition: all 0.3s;
             border: 2px solid transparent;
-            position: relative;
         }
         
         .role-item:hover {
@@ -1421,24 +1318,12 @@
             min-width: 0;
         }
         
-        .role-note-container {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
-        }
-        
-        .role-note {
+        .role-name {
             font-weight: 600;
             font-size: 16px;
             color: var(--text-dark);
+            margin-bottom: 4px;
             word-break: break-word;
-        }
-        
-        .role-name-small {
-            font-size: 12px;
-            color: var(--text-lighter);
-            font-style: italic;
         }
         
         .role-description {
@@ -1446,346 +1331,6 @@
             color: var(--text-light);
             line-height: 1.4;
             word-break: break-word;
-        }
-        
-        /* CSS代码编辑器 */
-        .css-editor-container {
-            border: 1px solid #e0e0e0;
-            border-radius: var(--radius-small);
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        
-        .css-editor-header {
-            background: #f8f9fa;
-            padding: 10px 15px;
-            border-bottom: 1px solid #e0e0e0;
-            font-size: 14px;
-            color: var(--text-light);
-        }
-        
-        .css-editor {
-            width: 100%;
-            min-height: 150px;
-            padding: 15px;
-            border: none;
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 13px;
-            line-height: 1.5;
-            resize: vertical;
-            outline: none;
-            background: #fafafa;
-        }
-        
-        .css-preview {
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: var(--radius-small);
-            border: 1px solid #e0e0e0;
-        }
-        
-        .css-preview-title {
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 10px;
-            color: var(--text-dark);
-        }
-        
-        /* 设置页面样式 */
-        .settings-group {
-            margin-bottom: 25px;
-            background: var(--bg-white);
-            border-radius: var(--radius-medium);
-            padding: 20px;
-            box-shadow: var(--shadow-light);
-        }
-        
-        .settings-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-            padding-bottom: 10px;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .settings-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-        }
-        
-        .settings-item:last-child {
-            border-bottom: none;
-        }
-        
-        .settings-label {
-            font-size: 15px;
-            color: var(--text-dark);
-        }
-        
-        .settings-value {
-            font-size: 14px;
-            color: var(--text-light);
-        }
-        
-        .settings-select {
-            padding: 8px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--radius-small);
-            font-size: 14px;
-            background: var(--bg-white);
-        }
-        
-        .settings-btn {
-            padding: 10px 20px;
-            background: var(--primary-color);
-            color: var(--bg-white);
-            border: none;
-            border-radius: var(--radius-small);
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .settings-btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        /* API模型设置 */
-        .api-model-select {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .api-model-item {
-            padding: 15px;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-medium);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .api-model-item:hover {
-            border-color: var(--primary-color);
-            background: #f0fff5;
-        }
-        
-        .api-model-item.selected {
-            border-color: var(--primary-color);
-            background: #f0fff5;
-        }
-        
-        .api-model-name {
-            font-weight: 600;
-            margin-bottom: 5px;
-            color: var(--text-dark);
-        }
-        
-        .api-model-desc {
-            font-size: 13px;
-            color: var(--text-light);
-        }
-        
-        /* API自定义设置 */
-        .api-custom-settings {
-            background: var(--bg-light);
-            border-radius: var(--radius-small);
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .api-custom-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 15px;
-            color: var(--text-dark);
-        }
-        
-        .api-custom-input-group {
-            margin-bottom: 15px;
-        }
-        
-        .api-custom-label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 5px;
-            color: var(--text-dark);
-        }
-        
-        .api-custom-input {
-            width: 100%;
-            padding: 10px 12px;
-            border: 1px solid #e0e0e0;
-            border-radius: var(--radius-small);
-            font-size: 14px;
-            background: var(--bg-white);
-        }
-        
-        .api-custom-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-        }
-        
-        .api-custom-slider {
-            width: 100%;
-            margin: 10px 0;
-        }
-        
-        .api-custom-slider-value {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-light);
-            margin-bottom: 10px;
-        }
-        
-        /* 评论列表样式 */
-        .comments-list {
-            max-height: 400px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-        }
-        
-        .comment-item {
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-            position: relative;
-        }
-        
-        .comment-item:last-child {
-            border-bottom: none;
-        }
-        
-        .comment-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 8px;
-            gap: 8px;
-        }
-        
-        .comment-author {
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-        
-        .comment-reply-to {
-            color: var(--primary-color);
-            font-size: 13px;
-        }
-        
-        .comment-time {
-            font-size: 12px;
-            color: var(--text-lighter);
-        }
-        
-        .comment-content {
-            color: var(--text-dark);
-            line-height: 1.4;
-            margin-bottom: 8px;
-            word-break: break-word;
-        }
-        
-        .comment-actions {
-            display: flex;
-            gap: 15px;
-            font-size: 12px;
-            color: var(--text-light);
-        }
-        
-        .comment-action {
-            cursor: pointer;
-            transition: color 0.3s;
-        }
-        
-        .comment-action:hover {
-            color: var(--primary-color);
-        }
-        
-        .comment-reply {
-            margin-left: 20px;
-            margin-top: 10px;
-            padding: 10px;
-            background: var(--bg-light);
-            border-radius: var(--radius-small);
-        }
-        
-        .comment-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-        }
-        
-        .comment-input-field {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            font-size: 14px;
-            outline: none;
-            transition: border-color 0.3s;
-        }
-        
-        .comment-input-field:focus {
-            border-color: var(--primary-color);
-        }
-        
-        .comment-send-btn {
-            padding: 10px 20px;
-            background: var(--primary-color);
-            color: var(--bg-white);
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .comment-send-btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        /* 点赞弹窗 */
-        .likes-float {
-            width: 350px;
-        }
-        
-        .likes-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        
-        .like-item {
-            padding: 12px 0;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        .like-item:last-child {
-            border-bottom: none;
-        }
-        
-        .like-avatar {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: #07c160;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            flex-shrink: 0;
-        }
-        
-        .like-name {
-            font-weight: 500;
-            color: var(--text-dark);
         }
         
         /* 滚动条样式 */
@@ -1828,68 +1373,6 @@
             .btn-primary:hover {
                 transform: scale(1.05);
             }
-        }
-        
-        /* 浮窗通知样式 */
-        .toast {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 14px;
-            z-index: 2000;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-        }
-        
-        .toast.show {
-            opacity: 1;
-        }
-        
-        .toast.success {
-            background: rgba(7, 193, 96, 0.9);
-        }
-        
-        .toast.error {
-            background: rgba(245, 34, 45, 0.9);
-        }
-        
-        .toast.info {
-            background: rgba(24, 144, 255, 0.9);
-        }
-        
-        /* 动态操作列表 */
-        .moment-actions-list {
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .moment-action-item {
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-dark);
-        }
-        
-        .moment-action-item:hover {
-            background: var(--bg-light);
-        }
-        
-        .moment-action-item:last-child {
-            border-bottom: none;
-        }
-        
-        .moment-action-item.delete {
-            color: #f5222d;
         }
     </style>
 </head>
@@ -1934,7 +1417,7 @@
                         </div>
                         <div>暂无联系人</div>
                         <div style="font-size: 14px; margin-top: 10px; color: #666;">
-                            点击右上角添加按钮创建联系人
+                            点击右上角添加按钮创建AI角色
                         </div>
                     </div>
                 </div>
@@ -1998,7 +1481,6 @@
                                 <div class="profile-status" id="profileStatus">
                                     <span id="statusText">点击设置状态</span>
                                 </div>
-                                <!-- 标签放在状态下，水平排列 -->
                                 <div class="profile-tags-container" id="profileTagsContainer">
                                     <!-- 标签将通过JS动态添加 -->
                                 </div>
@@ -2007,19 +1489,12 @@
                     </div>
                 </div>
                 <div class="profile-menu">
-                    <!-- 我的联系人 -->
+                    <!-- 修改为"我的联系人" -->
                     <div class="menu-item" id="myRolesBtn">
                         <div class="menu-icon">
                             <i class="fas fa-address-book"></i>
                         </div>
                         <div class="menu-text">我的联系人</div>
-                    </div>
-                    <!-- 设置 -->
-                    <div class="menu-item" id="settingsBtn">
-                        <div class="menu-icon">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div class="menu-text">设置</div>
                     </div>
                 </div>
             </div>
@@ -2041,125 +1516,59 @@
         </div>
     </div>
     
-    <!-- 联系人管理器浮窗 -->
-    <div class="float-window" id="roleManagerFloat">
-        <div class="float-header">
-            <div class="float-title">我的联系人</div>
-            <button class="float-close" id="closeRoleManager">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div id="roleList"></div>
-            <button class="btn-primary" id="addNewRoleBtn" style="margin-top: 20px;">
-                添加新联系人
-            </button>
+    <!-- 角色管理器弹窗 -->
+    <div class="modal" id="roleManagerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <!-- 修改为"我的联系人" -->
+                <div class="modal-title">我的联系人</div>
+                <button class="modal-close" id="closeRoleManager">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="roleList"></div>
+                <button class="btn-primary" id="addNewRoleBtn" style="margin-top: 20px;">
+                    添加新联系人
+                </button>
+            </div>
         </div>
     </div>
     
-    <!-- 联系人编辑浮窗 -->
-    <div class="float-window" id="roleEditorFloat">
-        <div class="float-header">
-            <div class="float-title">编辑联系人</div>
-            <button class="float-close" id="closeRoleEditor">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="form-group">
-                <div class="form-label">头像</div>
-                <div style="text-align: center;">
-                    <div id="roleAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <button class="btn-primary" id="uploadRoleAvatar" style="width: auto; padding: 10px 20px;">
-                        选择头像
-                    </button>
-                    <input type="file" id="roleAvatarInput" accept="image/*" style="display: none;">
-                </div>
+    <!-- 角色编辑弹窗 -->
+    <div class="modal" id="roleEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">编辑联系人</div>
+                <button class="modal-close" id="closeRoleEditor">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-            <div class="form-group">
-                <label class="form-label" for="roleName">名称</label>
-                <input type="text" class="form-input" id="roleName" placeholder="请输入联系人名称">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="roleNote">备注</label>
-                <input type="text" class="form-input" id="roleNote" placeholder="仅用户可见，联系人不可见">
-                <div style="font-size: 12px; color: #999; margin-top: 4px;">此备注仅用户可见，联系人不可见</div>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="rolePersonality">人物设定（可选）</label>
-                <textarea class="form-textarea" id="rolePersonality" placeholder="描述联系人的性格、背景、身份等设定（可不填，作为只听指令的机器人）" rows="3"></textarea>
-                <div style="font-size: 12px; color: #999; margin-top: 4px;">可不填写，若不填写则联系人将作为只听指令的机器人</div>
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="roleLanguageStyle">语言风格</label>
-                <input type="text" class="form-input" id="roleLanguageStyle" placeholder="例如：温柔体贴、幽默风趣、严谨专业等">
-            </div>
-            <div class="form-group">
-                <label class="form-label" for="roleOfflineStyle">线下风格</label>
-                <input type="text" class="form-input" id="roleOfflineStyle" placeholder="描述联系人线下互动时的风格">
-            </div>
-            <div class="form-group">
-                <label class="form-label">聊天背景</label>
-                <div style="margin-bottom: 10px;">
-                    <button class="btn-primary" id="uploadChatBackground" style="width: auto; padding: 10px 20px; margin-bottom: 10px;">
-                        从相册导入背景
-                    </button>
-                    <input type="file" id="chatBackgroundInput" accept="image/*" style="display: none;">
-                </div>
-                <div id="chatBackgroundPreview" style="width: 100%; height: 150px; border-radius: var(--radius-small); background: #f5f5f5; margin-bottom: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: var(--text-light);">
-                    <span>暂无背景</span>
-                </div>
-            </div>
-            <div class="form-group">
-                <label class="form-label">聊天气泡</label>
-                <div class="css-editor-container">
-                    <div class="css-editor-header">气泡CSS代码</div>
-                    <textarea class="css-editor" id="chatCssEditor" placeholder="输入自定义CSS代码，例如：
-.contact-message .message-content {
-    background: #e3f2fd;
-    color: #1565c0;
-}
-.user-message .message-content {
-    background: #4caf50;
-    color: white;
-}">/* 联系人消息气泡 */
-.contact-message .message-content {
-    background: var(--contact-bubble);
-    color: var(--contact-text);
-    border-radius: 18px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* 用户消息气泡 */
-.user-message .message-content {
-    background: var(--user-bubble);
-    color: var(--user-text);
-    border-radius: 18px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}</textarea>
-                </div>
-                <div class="css-preview">
-                    <div class="css-preview-title">气泡预览</div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="display: flex; justify-content: flex-start;">
-                            <div style="background: #ffffff; color: #333; border-radius: 18px; padding: 10px 14px; max-width: 70%;">联系人消息预览</div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <div class="form-label">联系人头像</div>
+                    <div style="text-align: center;">
+                        <div id="roleAvatarPreview" style="width: 100px; height: 100px; border-radius: 50%; background: #f0f0f0; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 24px; overflow: hidden;">
+                            <i class="fas fa-user"></i>
                         </div>
-                        <div style="display: flex; justify-content: flex-end;">
-                            <div style="background: #07c160; color: white; border-radius: 18px; padding: 10px 14px; max-width: 70%;">用户消息预览</div>
-                        </div>
+                        <button class="btn-primary" id="uploadRoleAvatar" style="width: auto; padding: 10px 20px;">
+                            选择头像
+                        </button>
+                        <input type="file" id="roleAvatarInput" accept="image/*" style="display: none;">
                     </div>
                 </div>
+                <div class="form-group">
+                    <label class="form-label" for="roleName">联系人名称</label>
+                    <input type="text" class="form-input" id="roleName" placeholder="请输入联系人名称">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="rolePersonality">联系人描述</label>
+                    <textarea class="form-input" id="rolePersonality" placeholder="描述联系人的性格、背景等" rows="4"></textarea>
+                </div>
+                <button class="btn-primary" id="saveRoleBtn">
+                    保存联系人
+                </button>
             </div>
-            <button class="btn-primary" id="applyChatCssBtn" style="margin-bottom: 15px;">
-                应用聊天样式
-            </button>
-            <button class="btn-primary" id="saveRoleBtn">
-                保存联系人
-            </button>
         </div>
     </div>
     
@@ -2169,31 +1578,9 @@
             <button class="dialog-back" id="backToChatList">
                 <i class="fas fa-chevron-left"></i>
             </button>
-            <div class="dialog-title-container" id="dialogTitleContainer">
-                <!-- 备注和名称将通过JS动态添加 -->
-            </div>
-            <button class="dialog-more-btn" id="dialogMoreBtn">
-                <i class="fas fa-ellipsis-h"></i>
-            </button>
-            <!-- 聊天对话框编辑浮窗 -->
-            <div class="chat-edit-float" id="chatEditFloat">
-                <div class="chat-edit-item" id="editContactInChatBtn">
-                    <i class="fas fa-edit"></i>
-                    <span>编辑联系人</span>
-                </div>
-                <div class="chat-edit-item" id="changeChatStyleBtn">
-                    <i class="fas fa-palette"></i>
-                    <span>修改聊天样式</span>
-                </div>
-                <div class="chat-edit-item delete" id="deleteContactInChatBtn">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>删除联系人</span>
-                </div>
-            </div>
+            <div class="dialog-title" id="currentRoleName">AI助手</div>
         </div>
-        <div class="chat-messages" id="chatMessages">
-            <!-- 没有初始欢迎语 -->
-        </div>
+        <div class="chat-messages" id="chatMessages"></div>
         <div class="chat-input">
             <input type="text" class="message-input" id="chatMessageInput" placeholder="请输入消息...">
             <button class="send-btn" id="sendChatMessage">
@@ -2202,251 +1589,40 @@
         </div>
     </div>
     
-    <!-- 消息编辑浮窗 -->
-    <div class="float-window" id="messageEditFloat">
-        <div class="float-header">
-            <div class="float-title">编辑消息</div>
-            <button class="float-close" id="closeMessageEditFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="form-group">
-                <textarea class="form-textarea" id="messageEditContent" rows="4" placeholder="编辑消息内容..."></textarea>
-            </div>
-            <button class="btn-primary" id="saveMessageEditBtn">
-                保存修改
-            </button>
-        </div>
-    </div>
-    
-    <!-- 动态编辑浮窗 -->
-    <div class="float-window moment-editor-float" id="momentEditorFloat">
-        <div class="float-header">
-            <div class="float-title">编辑动态</div>
-            <button class="float-close" id="closeMomentEditorFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="moment-editor-toolbar">
-            <button class="editor-tool-btn" id="importPhotoBtn" title="导入照片">
-                <i class="fas fa-image"></i>
-            </button>
-            <button class="editor-tool-btn" id="increaseFontBtn" title="放大字体">
-                <i class="fas fa-search-plus"></i>
-            </button>
-            <button class="editor-tool-btn" id="decreaseFontBtn" title="缩小字体">
-                <i class="fas fa-search-minus"></i>
-            </button>
-            <button class="editor-tool-btn" id="boldTextBtn" title="加粗">
-                <i class="fas fa-bold"></i>
-            </button>
-            <button class="editor-tool-btn" id="italicTextBtn" title="斜体">
-                <i class="fas fa-italic"></i>
-            </button>
-            <button class="editor-tool-btn" id="underlineTextBtn" title="下划线">
-                <i class="fas fa-underline"></i>
-            </button>
-            <button class="editor-tool-btn" id="highlightTextBtn" title="高亮">
-                <i class="fas fa-highlighter"></i>
-            </button>
-            <button class="editor-tool-btn" id="addEmojiBtn" title="添加表情">
-                <i class="far fa-smile"></i>
-            </button>
-        </div>
-        <div class="moment-editor-content">
-            <textarea class="moment-editor-textarea" id="momentEditorTextarea" placeholder="请输入动态内容..."></textarea>
-        </div>
-        <div style="padding: 15px 20px; border-top: 1px solid var(--border-color); text-align: right;">
-            <button class="btn-primary" id="publishMomentBtn" style="width: auto; padding: 10px 30px;">
-                发布
-            </button>
-        </div>
-    </div>
-    
-    <!-- 动态操作浮窗 -->
-    <div class="float-window" id="momentActionsFloat" style="max-width: 250px;">
-        <div class="float-body">
-            <div class="moment-actions-list">
-                <div class="moment-action-item" id="editMomentBtn">
-                    <i class="fas fa-edit"></i>
-                    <span>编辑动态</span>
-                </div>
-                <div class="moment-action-item delete" id="deleteMomentBtn">
-                    <i class="fas fa-trash-alt"></i>
-                    <span>删除动态</span>
+    <!-- 动态操作弹窗 -->
+    <div class="modal moment-actions-modal" id="momentActionsModal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="moment-actions-list">
+                    <div class="moment-action-item" id="editMomentBtn">
+                        <i class="fas fa-edit"></i>
+                        <span>编辑动态</span>
+                    </div>
+                    <div class="moment-action-item delete" id="deleteMomentBtn">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>删除动态</span>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
     
-    <!-- 点赞浮窗 -->
-    <div class="float-window likes-float" id="likesFloat">
-        <div class="float-header">
-            <div class="float-title">点赞列表</div>
-            <button class="float-close" id="closeLikesFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="likes-list" id="likesList">
-                <!-- 点赞列表将通过JS动态添加 -->
+    <!-- 评论弹窗 -->
+    <div class="modal comments-modal" id="commentsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">评论</div>
+                <button class="modal-close" id="closeCommentsModal">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
-        </div>
-    </div>
-    
-    <!-- 评论浮窗 -->
-    <div class="float-window" id="commentsFloat" style="max-width: 500px;">
-        <div class="float-header">
-            <div class="float-title">评论</div>
-            <button class="float-close" id="closeCommentsFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="comments-list" id="commentsList">
-                <!-- 评论将通过JS动态添加 -->
-            </div>
-            <div class="comment-input">
-                <input type="text" class="comment-input-field" id="commentInput" placeholder="请输入评论...">
-                <button class="comment-send-btn" id="sendCommentBtn">发送</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 标签编辑浮窗 -->
-    <div class="float-window" id="tagEditFloat" style="max-width: 350px;">
-        <div class="float-header">
-            <div class="float-title">编辑标签</div>
-            <button class="float-close" id="closeTagEditFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="form-group">
-                <label class="form-label" for="tagEditInput">标签内容</label>
-                <input type="text" class="form-input" id="tagEditInput" placeholder="输入标签内容（可带#号）">
-            </div>
-            <div class="form-group">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <input type="checkbox" id="tagHashToggle" class="tag-hash-checkbox" checked>
-                    <label for="tagHashToggle" style="font-size: 14px; color: var(--text-light); cursor: pointer;">添加#号前缀</label>
+            <div class="modal-body">
+                <div class="comments-list" id="commentsList">
+                    <!-- 评论将通过JS动态添加 -->
                 </div>
-            </div>
-            <button class="btn-primary" id="saveTagEditBtn">
-                保存标签
-            </button>
-        </div>
-    </div>
-    
-    <!-- 设置浮窗 -->
-    <div class="float-window" id="settingsFloat" style="max-width: 600px;">
-        <div class="float-header">
-            <div class="float-title">设置</div>
-            <button class="float-close" id="closeSettingsFloat">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="float-body">
-            <div class="settings-group">
-                <div class="settings-title">API模型设置</div>
-                <div style="margin-bottom: 15px; font-size: 14px; color: var(--text-light);">
-                    选择联系人使用的API模型，新建联系人将自动使用选中的模型
-                </div>
-                
-                <div class="api-model-select" id="apiModelSelect">
-                    <div class="api-model-item" data-model="gpt-3.5">
-                        <div class="api-model-name">GPT-3.5 Turbo</div>
-                        <div class="api-model-desc">快速、经济、适用于大多数对话场景</div>
-                    </div>
-                    <div class="api-model-item" data-model="gpt-4">
-                        <div class="api-model-name">GPT-4</div>
-                        <div class="api-model-desc">更智能、理解更深层，适用于复杂对话</div>
-                    </div>
-                    <div class="api-model-item" data-model="claude">
-                        <div class="api-model-name">Claude</div>
-                        <div class="api-model-desc">擅长创意写作和逻辑推理</div>
-                    </div>
-                    <div class="api-model-item" data-model="ernie">
-                        <div class="api-model-name">文心一言</div>
-                        <div class="api-model-desc">中文理解优秀，本土化优化</div>
-                    </div>
-                    <div class="api-model-item" data-model="custom">
-                        <div class="api-model-name">自定义API</div>
-                        <div class="api-model-desc">使用自备API，点击进入设置</div>
-                    </div>
-                </div>
-                
-                <!-- 自定义API设置 -->
-                <div class="api-custom-settings" id="apiCustomSettings" style="display: none;">
-                    <div class="api-custom-title">自定义API设置</div>
-                    <div class="api-custom-input-group">
-                        <label class="api-custom-label">API地址</label>
-                        <input type="text" class="api-custom-input" id="customApiUrl" placeholder="https://api.example.com/v1/chat/completions">
-                    </div>
-                    <div class="api-custom-input-group">
-                        <label class="api-custom-label">API密钥</label>
-                        <input type="password" class="api-custom-input" id="customApiKey" placeholder="输入您的API密钥">
-                    </div>
-                    <div class="api-custom-input-group">
-                        <label class="api-custom-label">模型名称</label>
-                        <input type="text" class="api-custom-input" id="customModelName" placeholder="例如：gpt-3.5-turbo">
-                    </div>
-                    <div class="api-custom-input-group">
-                        <label class="api-custom-label">回答温度：<span id="temperatureValue">0.7</span></label>
-                        <input type="range" class="api-custom-slider" id="temperatureSlider" min="0" max="1" step="0.1" value="0.7">
-                    </div>
-                    <div class="api-custom-input-group">
-                        <label class="api-custom-label">最大令牌数</label>
-                        <input type="number" class="api-custom-input" id="maxTokens" placeholder="例如：2048" value="2048">
-                    </div>
-                    <button class="btn-primary" id="testApiConnectionBtn" style="margin-top: 10px;">
-                        测试连接
-                    </button>
-                </div>
-                
-                <div style="margin-top: 20px;">
-                    <div class="settings-item">
-                        <div class="settings-label">当前选择模型</div>
-                        <div class="settings-value" id="currentModelDisplay">GPT-3.5 Turbo</div>
-                    </div>
-                </div>
-                
-                <div style="margin-top: 20px; display: flex; gap: 10px;">
-                    <button class="settings-btn" id="applyToAllBtn">应用到所有联系人</button>
-                    <button class="settings-btn" id="applyToSelectedBtn">应用到选中联系人</button>
-                </div>
-            </div>
-            
-            <div class="settings-group">
-                <div class="settings-title">显示设置</div>
-                <div class="settings-item">
-                    <div class="settings-label">暗色模式</div>
-                    <select class="settings-select" id="darkModeSelect">
-                        <option value="auto">自动</option>
-                        <option value="light">浅色</option>
-                        <option value="dark">深色</option>
-                    </select>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-label">字体大小</div>
-                    <select class="settings-select" id="fontSizeSelect">
-                        <option value="small">小</option>
-                        <option value="medium" selected>中</option>
-                        <option value="large">大</option>
-                    </select>
-                </div>
-            </div>
-            
-            <div class="settings-group">
-                <div class="settings-title">聊天设置</div>
-                <div class="settings-item">
-                    <div class="settings-label">消息声音提示</div>
-                    <input type="checkbox" id="messageSoundToggle" checked>
-                </div>
-                <div class="settings-item">
-                    <div class="settings-label">振动提醒</div>
-                    <input type="checkbox" id="vibrationToggle" checked>
+                <div class="comment-input">
+                    <input type="text" class="comment-input-field" id="commentInput" placeholder="请输入评论...">
+                    <button class="comment-send-btn" id="sendCommentBtn">发送</button>
                 </div>
             </div>
         </div>
@@ -2460,10 +1636,10 @@
     <script>
         // 全局数据
         let currentTab = 'chat';
-        let roles = JSON.parse(localStorage.getItem('contacts')) || [];
-        let moments = JSON.parse(localStorage.getItem('moments')) || [];
-        let userInfo = JSON.parse(localStorage.getItem('user_info')) || {};
-        let chatHistories = JSON.parse(localStorage.getItem('chat_histories')) || {};
+        let roles = JSON.parse(localStorage.getItem('ai_roles')) || [];
+        let moments = JSON.parse(localStorage.getItem('ai_moments')) || [];
+        let userInfo = JSON.parse(localStorage.getItem('ai_user_info')) || {};
+        let chatHistories = JSON.parse(localStorage.getItem('ai_chat_histories')) || {};
         let currentRoleId = null;
         let editingRoleId = null;
         let batteryMonitor = null;
@@ -2472,53 +1648,16 @@
         let touchEndX = 0;
         let touchEndY = 0;
         let currentMomentId = null;
-        let comments = JSON.parse(localStorage.getItem('comments')) || {};
-        let likes = JSON.parse(localStorage.getItem('likes')) || {};
-        let currentEditingMessageId = null;
-        let useHashForTags = JSON.parse(localStorage.getItem('use_hash_for_tags')) !== false;
-        let selectedApiModel = localStorage.getItem('selected_api_model') || 'gpt-3.5';
-        let appliedApiModels = JSON.parse(localStorage.getItem('applied_api_models')) || {};
-        let pinnedContacts = JSON.parse(localStorage.getItem('pinned_contacts')) || [];
+        let comments = JSON.parse(localStorage.getItem('ai_comments')) || {};
+        let likes = JSON.parse(localStorage.getItem('ai_likes')) || {};
         
-        // 浅色系颜色数组和对应的正常色
+        // 浅色系颜色数组
         const lightColors = [
-            { light: '#ffebee', normal: '#f44336' }, // 浅红 - 红
-            { light: '#fce4ec', normal: '#e91e63' }, // 浅粉 - 粉
-            { light: '#f3e5f5', normal: '#9c27b0' }, // 浅紫 - 紫
-            { light: '#e8eaf6', normal: '#3f51b5' }, // 浅蓝 - 蓝
-            { light: '#e3f2fd', normal: '#2196f3' }, // 浅天蓝 - 天蓝
-            { light: '#e0f2f1', normal: '#009688' }, // 浅青 - 青
-            { light: '#e8f5e9', normal: '#4caf50' }, // 浅绿 - 绿
-            { light: '#f1f8e9', normal: '#8bc34a' }, // 浅浅绿 - 浅绿
-            { light: '#fffde7', normal: '#ffeb3b' }, // 浅黄 - 黄
-            { light: '#fff3e0', normal: '#ff9800' }, // 浅橙 - 橙
-            { light: '#fbe9e7', normal: '#ff5722' }, // 浅深橙 - 深橙
-            { light: '#efebe9', normal: '#795548' }  // 浅棕 - 棕
+            '#e3f2fd', '#f3e5f5', '#e8f5e8', '#fff3e0', '#fce4ec',
+            '#f1f8e9', '#fff8e1', '#e8eaf6', '#f9fbe7', '#fffde7',
+            '#e0f2f1', '#fff3e0', '#f3e5f5', '#e8f5e9', '#f1f8e9',
+            '#fff8e1', '#e0f7fa', '#fce4ec', '#f3e5f5', '#e8eaf6'
         ];
-        
-        // API模型信息
-        const apiModels = {
-            'gpt-3.5': {
-                name: 'GPT-3.5 Turbo',
-                description: '快速、经济、适用于大多数对话场景'
-            },
-            'gpt-4': {
-                name: 'GPT-4',
-                description: '更智能、理解更深层，适用于复杂对话'
-            },
-            'claude': {
-                name: 'Claude',
-                description: '擅长创意写作和逻辑推理'
-            },
-            'ernie': {
-                name: '文心一言',
-                description: '中文理解优秀，本土化优化'
-            },
-            'custom': {
-                name: '自定义API',
-                description: '使用自备API'
-            }
-        };
         
         // 初始化函数
         function init() {
@@ -2527,7 +1666,6 @@
             loadUserInfo();
             loadChatList();
             loadMoments();
-            loadApiModelSelection();
             setupEventListeners();
             
             // 每分钟更新时间
@@ -2619,38 +1757,23 @@
             batteryLevel.style.background = '#52c41a';
         }
         
-        // 加载API模型选择
-        function loadApiModelSelection() {
-            const apiModelSelect = document.getElementById('apiModelSelect');
-            const currentModelDisplay = document.getElementById('currentModelDisplay');
-            const customSettings = document.getElementById('apiCustomSettings');
-            
-            // 显示当前选中的模型
-            currentModelDisplay.textContent = apiModels[selectedApiModel].name;
-            
-            // 设置选中的模型
-            document.querySelectorAll('.api-model-item').forEach(item => {
-                if (item.dataset.model === selectedApiModel) {
-                    item.classList.add('selected');
-                } else {
-                    item.classList.remove('selected');
-                }
-            });
-            
-            // 显示/隐藏自定义API设置
-            if (selectedApiModel === 'custom') {
-                customSettings.style.display = 'block';
-                // 加载保存的自定义API设置
-                const customSettingsData = JSON.parse(localStorage.getItem('custom_api_settings')) || {};
-                document.getElementById('customApiUrl').value = customSettingsData.apiUrl || '';
-                document.getElementById('customApiKey').value = customSettingsData.apiKey || '';
-                document.getElementById('customModelName').value = customSettingsData.modelName || '';
-                document.getElementById('temperatureSlider').value = customSettingsData.temperature || 0.7;
-                document.getElementById('temperatureValue').textContent = customSettingsData.temperature || 0.7;
-                document.getElementById('maxTokens').value = customSettingsData.maxTokens || 2048;
-            } else {
-                customSettings.style.display = 'none';
-            }
+        // 获取随机浅色
+        function getRandomLightColor() {
+            return lightColors[Math.floor(Math.random() * lightColors.length)];
+        }
+        
+        // 获取对应的深色边框
+        function getDarkBorderColor(lightColor) {
+            // 根据浅色计算对应的深色
+            const colorMap = {
+                '#e3f2fd': '#1976d2', '#f3e5f5': '#7b1fa2', '#e8f5e8': '#2e7d32',
+                '#fff3e0': '#ef6c00', '#fce4ec': '#c2185b', '#f1f8e9': '#689f38',
+                '#fff8e1': '#ff8f00', '#e8eaf6': '#303f9f', '#f9fbe7': '#afb42b',
+                '#fffde7': '#ffb300', '#e0f2f1': '#00695c', '#e0f7fa': '#00838f',
+                '#e8f5e9': '#2e7d32', '#fff3e0': '#ef6c00', '#f3e5f5': '#7b1fa2',
+                '#e8eaf6': '#303f9f', '#fce4ec': '#c2185b', '#f1f8e9': '#689f38'
+            };
+            return colorMap[lightColor] || '#d9d9d9';
         }
         
         // 显示浮窗通知
@@ -2673,35 +1796,6 @@
             }, duration);
         }
         
-        // 显示浮窗
-        function showFloat(floatId) {
-            const float = document.getElementById(floatId);
-            if (float) {
-                // 隐藏其他浮窗
-                document.querySelectorAll('.float-window').forEach(f => {
-                    if (f.id !== floatId) {
-                        f.classList.remove('active');
-                    }
-                });
-                float.classList.add('active');
-            }
-        }
-        
-        // 隐藏浮窗
-        function hideFloat(floatId) {
-            const float = document.getElementById(floatId);
-            if (float) {
-                float.classList.remove('active');
-            }
-        }
-        
-        // 隐藏所有浮窗
-        function hideAllFloats() {
-            document.querySelectorAll('.float-window').forEach(float => {
-                float.classList.remove('active');
-            });
-        }
-        
         // 加载用户信息
         function loadUserInfo() {
             // 设置默认用户信息
@@ -2715,33 +1809,25 @@
                     profileSignature: '点击编辑个性签名',
                     status: '点击设置状态',
                     tags: ['标签1', '标签2', '标签3'],
-                    statusColor: lightColors[0].light,
-                    tagColors: [lightColors[1].light, lightColors[2].light, lightColors[3].light],
-                    tagBorders: [lightColors[1].normal, lightColors[2].normal, lightColors[3].normal]
+                    statusColor: '#e3f2fd',
+                    tagColors: ['#f3e5f5', '#e8f5e8', '#fff3e0']
                 };
-                localStorage.setItem('user_info', JSON.stringify(userInfo));
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
             }
             
             // 确保颜色数据存在
             if (!userInfo.statusColor) {
-                userInfo.statusColor = lightColors[0].light;
+                userInfo.statusColor = getRandomLightColor();
             }
             if (!userInfo.tagColors || userInfo.tagColors.length !== userInfo.tags.length) {
-                // 每次更新随机浅色系
-                userInfo.tagColors = [];
-                userInfo.tagBorders = [];
-                for (let i = 0; i < userInfo.tags.length; i++) {
-                    const randomColor = lightColors[Math.floor(Math.random() * lightColors.length)];
-                    userInfo.tagColors.push(randomColor.light);
-                    userInfo.tagBorders.push(randomColor.normal);
-                }
+                userInfo.tagColors = userInfo.tags.map(() => getRandomLightColor());
             }
             
             // 更新动态页面UI
             document.getElementById('userName').textContent = userInfo.name;
             document.getElementById('userBio').textContent = userInfo.bio;
             
-            // 更新动态页面的标签 - 抓取动态主页色彩
+            // 更新动态页面的标签
             const dynamicTagsContainer = document.getElementById('dynamicTagsContainer');
             dynamicTagsContainer.innerHTML = '';
             if (userInfo.tags && Array.isArray(userInfo.tags)) {
@@ -2749,20 +1835,9 @@
                     if (tag) {
                         const tagElement = document.createElement('div');
                         tagElement.className = 'dynamic-tag';
-                        
-                        // 如果标签不以#开头，根据设置添加
-                        let displayTag = tag;
-                        if (useHashForTags && !tag.startsWith('#')) {
-                            displayTag = `#${tag}`;
-                        } else if (!useHashForTags && tag.startsWith('#')) {
-                            displayTag = tag.substring(1);
-                        }
-                        tagElement.textContent = displayTag;
-                        
-                        // 动态标签颜色自适应封面 - 使用半透明白色
-                        tagElement.style.background = 'rgba(255, 255, 255, 0.15)';
-                        tagElement.style.borderColor = 'rgba(255, 255, 255, 0.3)';
-                        tagElement.style.color = 'rgba(255, 255, 255, 0.9)';
+                        tagElement.textContent = tag;
+                        tagElement.style.background = userInfo.tagColors[index] || getRandomLightColor();
+                        tagElement.style.borderColor = getDarkBorderColor(userInfo.tagColors[index]);
                         dynamicTagsContainer.appendChild(tagElement);
                     }
                 });
@@ -2777,42 +1852,22 @@
             // 更新状态样式
             const statusElement = document.getElementById('profileStatus');
             statusElement.style.background = userInfo.statusColor;
-            statusElement.style.borderColor = '#d9d9d9';
-            statusElement.style.color = '#333';
+            statusElement.style.borderColor = getDarkBorderColor(userInfo.statusColor);
+            statusElement.style.color = getDarkBorderColor(userInfo.statusColor);
             
-            // 更新标签 - 根据设置显示#号，使用浅色背景和正常色边框
+            // 更新标签
             const profileTagsContainer = document.getElementById('profileTagsContainer');
             profileTagsContainer.innerHTML = '';
-            
-            // 添加标签井号开关
-            const hashToggleContainer = document.createElement('div');
-            hashToggleContainer.className = 'tag-hash-toggle';
-            hashToggleContainer.innerHTML = `
-                <input type="checkbox" id="profileHashToggle" class="tag-hash-checkbox" ${useHashForTags ? 'checked' : ''}>
-                <label for="profileHashToggle">#号</label>
-            `;
-            
             if (userInfo.tags && Array.isArray(userInfo.tags)) {
                 userInfo.tags.forEach((tag, index) => {
                     if (tag) {
                         const tagElement = document.createElement('div');
                         tagElement.className = 'profile-tag';
-                        
-                        // 根据设置显示#号
-                        let displayTag = tag;
-                        if (useHashForTags && !tag.startsWith('#')) {
-                            displayTag = `#${tag}`;
-                        } else if (!useHashForTags && tag.startsWith('#')) {
-                            displayTag = tag.substring(1);
-                        }
-                        tagElement.textContent = displayTag;
-                        
-                        // 使用浅色背景和正常色边框
-                        tagElement.style.background = userInfo.tagColors[index] || lightColors[0].light;
-                        tagElement.style.borderColor = userInfo.tagBorders[index] || lightColors[0].normal;
-                        tagElement.style.color = '#333';
-                        
-                        tagElement.addEventListener('click', () => openTagEditModal(tag, index));
+                        tagElement.textContent = tag;
+                        tagElement.style.background = userInfo.tagColors[index] || getRandomLightColor();
+                        tagElement.style.borderColor = getDarkBorderColor(userInfo.tagColors[index]);
+                        tagElement.style.color = getDarkBorderColor(userInfo.tagColors[index]);
+                        tagElement.addEventListener('click', () => editTag(tag, index));
                         profileTagsContainer.appendChild(tagElement);
                     }
                 });
@@ -2820,24 +1875,8 @@
                 // 确保至少有3个标签
                 while (userInfo.tags.length < 3) {
                     userInfo.tags.push(`标签${userInfo.tags.length + 1}`);
-                    const randomColor = lightColors[Math.floor(Math.random() * lightColors.length)];
-                    userInfo.tagColors.push(randomColor.light);
-                    userInfo.tagBorders.push(randomColor.normal);
+                    userInfo.tagColors.push(getRandomLightColor());
                 }
-            }
-            
-            // 添加井号开关到标签容器
-            profileTagsContainer.appendChild(hashToggleContainer);
-            
-            // 井号开关事件
-            const hashToggle = document.getElementById('profileHashToggle');
-            if (hashToggle) {
-                hashToggle.addEventListener('change', (e) => {
-                    useHashForTags = e.target.checked;
-                    localStorage.setItem('use_hash_for_tags', useHashForTags);
-                    loadUserInfo(); // 重新加载以更新标签显示
-                    showToast(`已${useHashForTags ? '开启' : '关闭'}标签井号前缀`);
-                });
             }
             
             // 设置动态封面背景
@@ -2852,68 +1891,16 @@
             }
             
             // 保存更新后的用户信息
-            localStorage.setItem('user_info', JSON.stringify(userInfo));
+            localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
         }
         
-        // 打开标签编辑浮窗
-        function openTagEditModal(tag, index) {
-            const input = document.getElementById('tagEditInput');
-            const hashToggle = document.getElementById('tagHashToggle');
-            
-            // 如果标签以#开头，编辑时去掉#
-            const displayTag = tag.startsWith('#') ? tag.substring(1) : tag;
-            input.value = displayTag;
-            hashToggle.checked = useHashForTags;
-            
-            // 保存编辑的标签索引
-            input.dataset.tagIndex = index;
-            
-            showFloat('tagEditFloat');
-        }
-        
-        // 保存标签编辑
-        function saveTagEdit() {
-            const input = document.getElementById('tagEditInput');
-            const hashToggle = document.getElementById('tagHashToggle');
-            const index = input.dataset.tagIndex;
-            const newTag = input.value.trim();
-            
-            if (!newTag) {
-                showToast('请输入标签内容', 'error');
-                return;
-            }
-            
-            // 根据井号设置处理标签
-            let finalTag = newTag;
-            if (hashToggle.checked && !newTag.startsWith('#')) {
-                finalTag = `#${newTag}`;
-            } else if (!hashToggle.checked && newTag.startsWith('#')) {
-                finalTag = newTag.substring(1);
-            }
-            
-            // 更新标签
-            userInfo.tags[index] = finalTag;
-            
-            // 更新全局井号设置
-            useHashForTags = hashToggle.checked;
-            localStorage.setItem('use_hash_for_tags', useHashForTags);
-            
-            // 保存并重新加载
-            localStorage.setItem('user_info', JSON.stringify(userInfo));
-            loadUserInfo();
-            
-            // 关闭浮窗
-            hideFloat('tagEditFloat');
-            showToast('标签已更新');
-        }
-        
-        // 加载聊天列表 - 支持左滑操作，显示置顶标识
+        // 加载聊天列表 - 支持左滑操作
         function loadChatList() {
             const chatList = document.getElementById('chatList');
             
-            // 清空原有的示例联系人
-            roles = roles.filter(role => !['联系人助手', '编程导师'].includes(role.name.toLowerCase()));
-            localStorage.setItem('contacts', JSON.stringify(roles));
+            // 清空原有的示例角色
+            roles = roles.filter(role => !['ai助手', '编程导师'].includes(role.name.toLowerCase()));
+            localStorage.setItem('ai_roles', JSON.stringify(roles));
             
             if (roles.length === 0) {
                 chatList.innerHTML = `
@@ -2923,48 +1910,28 @@
                         </div>
                         <div>暂无联系人</div>
                         <div style="font-size: 14px; margin-top: 10px; color: #666;">
-                            点击右上角添加按钮创建联系人
+                            点击右上角添加按钮创建AI角色
                         </div>
                     </div>
                 `;
                 return;
             }
             
-            // 分离置顶和非置顶联系人
-            const pinned = [];
-            const unpinned = [];
-            
-            roles.forEach(role => {
-                if (pinnedContacts.includes(role.id)) {
-                    pinned.push(role);
-                } else {
-                    unpinned.push(role);
-                }
-            });
-            
-            // 合并列表（置顶在前）
-            const sortedRoles = [...pinned, ...unpinned];
-            
             chatList.innerHTML = '';
-            sortedRoles.forEach(role => {
+            roles.forEach(role => {
                 const history = chatHistories[role.id] || [];
                 const lastMessage = history.length > 0 ? history[history.length - 1] : null;
-                const isPinned = pinnedContacts.includes(role.id);
                 
                 const chatItemContainer = document.createElement('div');
                 chatItemContainer.className = 'chat-item-container';
                 chatItemContainer.innerHTML = `
                     <div class="chat-item" data-role-id="${role.id}">
-                        ${isPinned ? '<div class="pinned-indicator"><i class="fas fa-thumbtack"></i></div>' : ''}
                         <div class="role-header">
                             <div class="role-avatar">
                                 ${role.avatar ? `<img src="${role.avatar}" alt="${role.name}">` : role.name.charAt(0)}
                             </div>
                             <div class="role-info">
-                                <div class="role-note-container">
-                                    <div class="role-note">${role.note || role.name}</div>
-                                    <div class="role-name-small">${role.name}</div>
-                                </div>
+                                <div class="role-name">${role.name}</div>
                                 <div class="role-description">
                                     ${lastMessage ? (lastMessage.content.length > 30 ? lastMessage.content.substring(0, 30) + '...' : lastMessage.content) : '开始聊天'}
                                 </div>
@@ -2974,7 +1941,7 @@
                     <div class="chat-item-actions">
                         <button class="chat-action-btn pin" data-role-id="${role.id}">
                             <i class="fas fa-thumbtack"></i>
-                            <span>${isPinned ? '取消置顶' : '置顶'}</span>
+                            <span>置顶</span>
                         </button>
                         <button class="chat-action-btn delete" data-role-id="${role.id}">
                             <i class="fas fa-trash-alt"></i>
@@ -2994,7 +1961,7 @@
                 // 触摸事件处理
                 let startX = 0;
                 let currentX = 0;
-                let isDragging = true;
+                let isDragging = false;
                 
                 chatItem.addEventListener('touchstart', (e) => {
                     startX = e.touches[0].clientX;
@@ -3035,11 +2002,11 @@
                     }
                 });
                 
-                // 置顶/取消置顶按钮事件
+                // 置顶按钮事件
                 const pinBtn = chatItemContainer.querySelector('.chat-action-btn.pin');
                 pinBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    togglePinContact(role.id);
+                    pinContact(role.id);
                 });
                 
                 // 删除按钮事件
@@ -3053,40 +2020,28 @@
             });
         }
         
-        // 切换置顶联系人
-        function togglePinContact(roleId) {
-            const index = pinnedContacts.indexOf(roleId);
-            if (index === -1) {
-                // 置顶
-                pinnedContacts.push(roleId);
+        // 置顶联系人
+        function pinContact(roleId) {
+            const roleIndex = roles.findIndex(r => r.id === roleId);
+            if (roleIndex !== -1) {
+                const [pinnedRole] = roles.splice(roleIndex, 1);
+                roles.unshift(pinnedRole);
+                localStorage.setItem('ai_roles', JSON.stringify(roles));
+                loadChatList();
                 showToast('联系人已置顶');
-            } else {
-                // 取消置顶
-                pinnedContacts.splice(index, 1);
-                showToast('已取消置顶');
             }
-            
-            localStorage.setItem('pinned_contacts', JSON.stringify(pinnedContacts));
-            loadChatList();
         }
         
         // 删除联系人
         function deleteContact(roleId) {
             if (confirm('确定要删除这个联系人吗？')) {
                 roles = roles.filter(r => r.id !== roleId);
-                localStorage.setItem('contacts', JSON.stringify(roles));
-                
-                // 从置顶列表中移除
-                const pinIndex = pinnedContacts.indexOf(roleId);
-                if (pinIndex !== -1) {
-                    pinnedContacts.splice(pinIndex, 1);
-                    localStorage.setItem('pinned_contacts', JSON.stringify(pinnedContacts));
-                }
+                localStorage.setItem('ai_roles', JSON.stringify(roles));
                 
                 // 删除聊天记录
                 if (chatHistories[roleId]) {
                     delete chatHistories[roleId];
-                    localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
+                    localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
                 }
                 
                 loadChatList();
@@ -3155,12 +2110,11 @@
                     </div>
                 `;
                 
-                // 点赞按钮事件 - 点击显示点赞列表
+                // 点赞按钮事件
                 const likeBtn = momentItem.querySelector('.like-btn');
                 likeBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    currentMomentId = moment.id;
-                    openLikesModal(moment.id);
+                    toggleLike(moment.id);
                 });
                 
                 // 评论按钮事件
@@ -3175,46 +2129,11 @@
                 moreBtn.addEventListener('click', (e) => {
                     e.stopPropagation();
                     currentMomentId = moment.id;
-                    showFloat('momentActionsFloat');
+                    document.getElementById('momentActionsModal').classList.add('active');
                 });
                 
                 momentsList.appendChild(momentItem);
             });
-        }
-        
-        // 打开点赞浮窗
-        function openLikesModal(momentId) {
-            currentMomentId = momentId;
-            const likesList = document.getElementById('likesList');
-            const momentLikes = likes[momentId] || [];
-            
-            likesList.innerHTML = '';
-            
-            if (momentLikes.length === 0) {
-                likesList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">还没有人点赞</div>';
-            } else {
-                // 模拟一些点赞用户（包括自己）
-                const likeUsers = [
-                    { id: 'user1', name: '张三', note: '好友' },
-                    { id: 'user2', name: '李四', note: '同事' },
-                    { id: 'user3', name: '王五', note: '同学' },
-                    { id: 'user4', name: '赵六', note: '' },
-                    { id: 'user5', name: '钱七', note: '家人' },
-                    { id: 'currentUser', name: userInfo.name, note: userInfo.name } // 自己
-                ].slice(0, Math.min(momentLikes.length, 6));
-                
-                likeUsers.forEach(user => {
-                    const likeItem = document.createElement('div');
-                    likeItem.className = 'like-item';
-                    likeItem.innerHTML = `
-                        <div class="like-avatar">${user.name.charAt(0)}</div>
-                        <div class="like-name">${user.note || user.name}</div>
-                    `;
-                    likesList.appendChild(likeItem);
-                });
-            }
-            
-            showFloat('likesFloat');
         }
         
         // 点赞/取消点赞
@@ -3252,10 +2171,10 @@
                 showToast('已取消点赞', 'info');
             }
             
-            localStorage.setItem('likes', JSON.stringify(likes));
+            localStorage.setItem('ai_likes', JSON.stringify(likes));
         }
         
-        // 打开评论浮窗
+        // 打开评论弹窗
         function openComments(momentId) {
             currentMomentId = momentId;
             const commentsList = document.getElementById('commentsList');
@@ -3266,101 +2185,19 @@
             if (momentComments.length === 0) {
                 commentsList.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无评论</div>';
             } else {
-                // 按时间从早到晚排序
-                momentComments.sort((a, b) => new Date(a.time) - new Date(b.time)).forEach(comment => {
+                momentComments.forEach(comment => {
                     const commentItem = document.createElement('div');
                     commentItem.className = 'comment-item';
-                    commentItem.dataset.commentId = comment.id;
-                    
-                    // 构建评论头部
-                    let headerHTML = `<div class="comment-header">
+                    commentItem.innerHTML = `
                         <div class="comment-author">${comment.author}</div>
-                        ${comment.replyTo ? `<span class="comment-reply-to">回复 @${comment.replyTo}</span>` : ''}
-                        <div class="comment-time">${comment.time}</div>
-                    </div>
-                    <div class="comment-content">${comment.content}</div>
-                    <div class="comment-actions">
-                        <span class="comment-action reply-comment">回复</span>
-                        <span class="comment-action edit-comment">编辑</span>
-                        <span class="comment-action delete-comment">删除</span>
-                    </div>
-                `;
-                    
-                    commentItem.innerHTML = headerHTML;
-                    
-                    // 评论操作事件
-                    const replyBtn = commentItem.querySelector('.reply-comment');
-                    const editBtn = commentItem.querySelector('.edit-comment');
-                    const deleteBtn = commentItem.querySelector('.delete-comment');
-                    
-                    replyBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        document.getElementById('commentInput').placeholder = `回复 ${comment.author}: `;
-                        document.getElementById('commentInput').dataset.replyTo = comment.author;
-                        document.getElementById('commentInput').focus();
-                    });
-                    
-                    editBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        editComment(comment.id, momentId);
-                    });
-                    
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        deleteComment(comment.id, momentId);
-                    });
-                    
-                    // 长按删除
-                    let longPressTimer;
-                    commentItem.addEventListener('touchstart', (e) => {
-                        longPressTimer = setTimeout(() => {
-                            deleteComment(comment.id, momentId);
-                        }, 1000);
-                    });
-                    
-                    commentItem.addEventListener('touchend', (e) => {
-                        clearTimeout(longPressTimer);
-                    });
-                    
+                        <div class="comment-content">${comment.content}</div>
+                    `;
                     commentsList.appendChild(commentItem);
                 });
             }
             
-            showFloat('commentsFloat');
+            document.getElementById('commentsModal').classList.add('active');
             document.getElementById('commentInput').focus();
-        }
-        
-        // 编辑评论
-        function editComment(commentId, momentId) {
-            const momentComments = comments[momentId] || [];
-            const commentIndex = momentComments.findIndex(c => c.id === commentId);
-            
-            if (commentIndex !== -1) {
-                const comment = momentComments[commentIndex];
-                const newContent = prompt('编辑评论内容：', comment.content);
-                
-                if (newContent !== null && newContent.trim()) {
-                    comment.content = newContent.trim();
-                    comment.time = new Date().toLocaleString();
-                    localStorage.setItem('comments', JSON.stringify(comments));
-                    
-                    // 重新加载评论
-                    openComments(momentId);
-                    showToast('评论已更新');
-                }
-            }
-        }
-        
-        // 删除评论
-        function deleteComment(commentId, momentId) {
-            if (confirm('确定要删除这条评论吗？')) {
-                comments[momentId] = comments[momentId].filter(c => c.id !== commentId);
-                localStorage.setItem('comments', JSON.stringify(comments));
-                
-                // 重新加载评论
-                openComments(momentId);
-                showToast('评论已删除');
-            }
         }
         
         // 发送评论
@@ -3381,65 +2218,26 @@
                 id: 'comment_' + Date.now(),
                 author: userInfo.name,
                 content: comment,
-                time: new Date().toLocaleString(),
-                replyTo: commentInput.dataset.replyTo || null
+                time: new Date().toLocaleString()
             };
             
             comments[currentMomentId].push(newComment);
-            localStorage.setItem('comments', JSON.stringify(comments));
+            localStorage.setItem('ai_comments', JSON.stringify(comments));
             
             // 更新UI
             loadMoments();
             
             // 清空输入框
             commentInput.value = '';
-            commentInput.placeholder = '请输入评论...';
-            delete commentInput.dataset.replyTo;
             
             // 更新评论列表
             const commentsList = document.getElementById('commentsList');
             const commentItem = document.createElement('div');
             commentItem.className = 'comment-item';
-            commentItem.dataset.commentId = newComment.id;
-            
-            const headerHTML = `
-                <div class="comment-header">
-                    <div class="comment-author">${newComment.author}</div>
-                    ${newComment.replyTo ? `<span class="comment-reply-to">回复 @${newComment.replyTo}</span>` : ''}
-                    <div class="comment-time">${newComment.time}</div>
-                </div>
+            commentItem.innerHTML = `
+                <div class="comment-author">${newComment.author}</div>
                 <div class="comment-content">${newComment.content}</div>
-                <div class="comment-actions">
-                    <span class="comment-action reply-comment">回复</span>
-                    <span class="comment-action edit-comment">编辑</span>
-                    <span class="comment-action delete-comment">删除</span>
-                </div>
             `;
-            
-            commentItem.innerHTML = headerHTML;
-            
-            // 评论操作事件
-            const replyBtn = commentItem.querySelector('.reply-comment');
-            const editBtn = commentItem.querySelector('.edit-comment');
-            const deleteBtn = commentItem.querySelector('.delete-comment');
-            
-            replyBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                commentInput.placeholder = `回复 ${newComment.author}: `;
-                commentInput.dataset.replyTo = newComment.author;
-                commentInput.focus();
-            });
-            
-            editBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                editComment(newComment.id, currentMomentId);
-            });
-            
-            deleteBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                deleteComment(newComment.id, currentMomentId);
-            });
-            
             commentsList.appendChild(commentItem);
             
             showToast('评论成功');
@@ -3450,66 +2248,68 @@
             const moment = moments.find(m => m.id === currentMomentId);
             if (!moment) return;
             
-            // 使用浮窗编辑器
-            document.getElementById('momentEditorTextarea').value = moment.content;
-            showFloat('momentEditorFloat');
+            const newContent = prompt('编辑动态内容：', moment.content);
+            if (newContent !== null && newContent.trim()) {
+                moment.content = newContent.trim();
+                moment.time = new Date().toLocaleString();
+                localStorage.setItem('ai_moments', JSON.stringify(moments));
+                loadMoments();
+                showToast('动态已更新');
+            }
             
-            hideFloat('momentActionsFloat');
+            document.getElementById('momentActionsModal').classList.remove('active');
         }
         
         // 删除动态
         function deleteMoment() {
             if (confirm('确定要删除这条动态吗？')) {
                 moments = moments.filter(m => m.id !== currentMomentId);
-                localStorage.setItem('moments', JSON.stringify(moments));
+                localStorage.setItem('ai_moments', JSON.stringify(moments));
                 
                 // 删除相关的点赞和评论
                 if (likes[currentMomentId]) {
                     delete likes[currentMomentId];
-                    localStorage.setItem('likes', JSON.stringify(likes));
+                    localStorage.setItem('ai_likes', JSON.stringify(likes));
                 }
                 
                 if (comments[currentMomentId]) {
                     delete comments[currentMomentId];
-                    localStorage.setItem('comments', JSON.stringify(comments));
+                    localStorage.setItem('ai_comments', JSON.stringify(comments));
                 }
                 
                 loadMoments();
                 showToast('动态已删除');
             }
             
-            hideFloat('momentActionsFloat');
+            document.getElementById('momentActionsModal').classList.remove('active');
         }
         
-        // 打开聊天对话框 - 没有初始欢迎语
+        // 打开聊天对话框
         function openChatDialog(roleId) {
             currentRoleId = roleId;
             const role = roles.find(r => r.id === roleId);
             if (!role) return;
             
-            // 更新对话框标题 - 优先显示备注，名称作为灰色斜体小字
-            const dialogTitleContainer = document.getElementById('dialogTitleContainer');
-            dialogTitleContainer.innerHTML = '';
-            
-            const noteSpan = document.createElement('span');
-            noteSpan.className = 'dialog-title-note';
-            noteSpan.textContent = role.note || role.name;
-            
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'dialog-title-name';
-            nameSpan.textContent = `(${role.name})`;
-            
-            dialogTitleContainer.appendChild(noteSpan);
-            dialogTitleContainer.appendChild(nameSpan);
-            
-            // 清空聊天消息 - 没有初始欢迎语
+            document.getElementById('currentRoleName').textContent = role.name;
             document.getElementById('chatMessages').innerHTML = '';
             
             // 加载聊天记录
             const history = chatHistories[roleId] || [];
-            if (history.length > 0) {
+            if (history.length === 0) {
+                const welcomeMsg = document.createElement('div');
+                welcomeMsg.className = 'message';
+                welcomeMsg.innerHTML = `
+                    <div class="message-content">
+                        你好！我是${role.name}。${role.personality ? role.personality.substring(0, 100) + '...' : '很高兴为你服务！'}
+                    </div>
+                `;
+                document.getElementById('chatMessages').appendChild(welcomeMsg);
+            } else {
                 history.forEach(msg => {
-                    addMessageToChat(msg.content, msg.role === 'user', msg.id, msg.time);
+                    const msgElement = document.createElement('div');
+                    msgElement.className = `message ${msg.role === 'user' ? 'user' : ''}`;
+                    msgElement.innerHTML = `<div class="message-content">${msg.content}</div>`;
+                    document.getElementById('chatMessages').appendChild(msgElement);
                 });
             }
             
@@ -3524,121 +2324,7 @@
             }, 100);
         }
         
-        // 添加消息到聊天界面 - 带时间显示
-        function addMessageToChat(content, isUser = false, messageId = null, timestamp = null) {
-            const messageElement = document.createElement('div');
-            messageElement.className = `message ${isUser ? 'user' : 'contact'}`;
-            
-            if (messageId) {
-                messageElement.dataset.messageId = messageId;
-            } else {
-                messageElement.dataset.messageId = 'msg_' + Date.now();
-            }
-            
-            const contentContainer = document.createElement('div');
-            contentContainer.className = 'message-content-container';
-            
-            const messageContent = document.createElement('div');
-            messageContent.className = 'message-content';
-            messageContent.textContent = content;
-            
-            // 添加时间显示
-            const timeElement = document.createElement('div');
-            timeElement.className = 'message-time';
-            
-            const now = timestamp ? new Date(timestamp) : new Date();
-            const hours = now.getHours().toString().padStart(2, '0');
-            const minutes = now.getMinutes().toString().padStart(2, '0');
-            timeElement.textContent = `${hours}:${minutes}`;
-            
-            contentContainer.appendChild(messageContent);
-            contentContainer.appendChild(timeElement);
-            
-            // 添加编辑按钮（仅用户消息）
-            if (isUser) {
-                const editBtn = document.createElement('button');
-                editBtn.className = 'message-edit-btn';
-                editBtn.innerHTML = '<i class="fas fa-edit"></i>';
-                editBtn.title = '编辑消息';
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    editMessage(messageElement.dataset.messageId, content);
-                });
-                
-                messageElement.appendChild(contentContainer);
-                messageElement.appendChild(editBtn);
-                
-                // 长按编辑消息
-                let longPressTimer;
-                messageElement.addEventListener('touchstart', (e) => {
-                    longPressTimer = setTimeout(() => {
-                        editMessage(messageElement.dataset.messageId, content);
-                    }, 1000);
-                });
-                
-                messageElement.addEventListener('touchend', (e) => {
-                    clearTimeout(longPressTimer);
-                });
-            } else {
-                messageElement.appendChild(contentContainer);
-            }
-            
-            document.getElementById('chatMessages').appendChild(messageElement);
-            
-            // 滚动到底部
-            const messagesContainer = document.getElementById('chatMessages');
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-            
-            return messageElement.dataset.messageId;
-        }
-        
-        // 编辑消息
-        function editMessage(messageId, currentContent) {
-            currentEditingMessageId = messageId;
-            const textarea = document.getElementById('messageEditContent');
-            
-            textarea.value = currentContent;
-            showFloat('messageEditFloat');
-            textarea.focus();
-        }
-        
-        // 保存消息编辑
-        function saveMessageEdit() {
-            const textarea = document.getElementById('messageEditContent');
-            const newContent = textarea.value.trim();
-            
-            if (!newContent) {
-                showToast('消息内容不能为空', 'error');
-                return;
-            }
-            
-            // 更新聊天界面中的消息
-            const messageElement = document.querySelector(`[data-message-id="${currentEditingMessageId}"] .message-content`);
-            if (messageElement) {
-                messageElement.textContent = newContent;
-            }
-            
-            // 更新聊天历史记录
-            if (currentRoleId && chatHistories[currentRoleId]) {
-                const messageIndex = chatHistories[currentRoleId].findIndex(msg => 
-                    msg.id === currentEditingMessageId || 
-                    (msg.role === 'user' && msg.content === textarea.dataset.originalContent)
-                );
-                
-                if (messageIndex !== -1) {
-                    chatHistories[currentRoleId][messageIndex].content = newContent;
-                    chatHistories[currentRoleId][messageIndex].edited = true;
-                    chatHistories[currentRoleId][messageIndex].editTime = Date.now();
-                    localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
-                }
-            }
-            
-            // 关闭浮窗
-            hideFloat('messageEditFloat');
-            showToast('消息已修改');
-        }
-        
-        // 发送消息 - 基于API模型
+        // 发送消息
         function sendMessage() {
             const input = document.getElementById('chatMessageInput');
             const message = input.value.trim();
@@ -3649,7 +2335,10 @@
             if (!role) return;
             
             // 添加用户消息
-            const messageId = addMessageToChat(message, true);
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user';
+            userMsg.innerHTML = `<div class="message-content">${message}</div>`;
+            document.getElementById('chatMessages').appendChild(userMsg);
             
             // 保存消息历史
             if (!chatHistories[currentRoleId]) {
@@ -3657,7 +2346,6 @@
             }
             
             chatHistories[currentRoleId].push({
-                id: messageId,
                 role: 'user',
                 content: message,
                 time: Date.now()
@@ -3666,93 +2354,48 @@
             // 清空输入框
             input.value = '';
             
-            // 基于API模型生成联系人回复
+            // 模拟AI回复
             setTimeout(() => {
-                // 获取联系人使用的API模型
-                const contactModel = appliedApiModels[currentRoleId] || selectedApiModel;
+                const responses = [
+                    `我理解你的意思："${message}"。作为一个${role.name}，我会尽力帮助你。`,
+                    `关于"${message}"，这是一个很好的话题！让我想想怎么回答你。`,
+                    `你说得对，"${message}"确实值得讨论。让我分享一下我的看法。`,
+                    `我收到了你的消息："${message}"。${role.personality ? '根据我的角色设定，' + role.personality.substring(0, 50) + '...' : '我很乐意和你聊天。'}`,
+                    `感谢你的分享。关于"${message}"，我可以从几个角度来分析...`
+                ];
                 
-                // 基于人物设定和API模型生成回复
-                let reply = generateContactReply(message, role, contactModel);
+                const reply = responses[Math.floor(Math.random() * responses.length)];
                 
-                // 添加联系人回复
-                const replyMessageId = addMessageToChat(reply, false);
+                // 添加AI回复
+                const aiMsg = document.createElement('div');
+                aiMsg.className = 'message';
+                aiMsg.innerHTML = `<div class="message-content">${reply}</div>`;
+                document.getElementById('chatMessages').appendChild(aiMsg);
                 
-                // 保存联系人回复
+                // 保存AI回复
                 chatHistories[currentRoleId].push({
-                    id: replyMessageId,
                     role: 'assistant',
                     content: reply,
                     time: Date.now()
                 });
                 
                 // 保存到本地存储
-                localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
+                localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
                 
                 // 更新聊天列表
                 loadChatList();
+                
+                // 滚动到底部
+                const messagesContainer = document.getElementById('chatMessages');
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
             }, 1000);
             
             // 保存用户消息
-            localStorage.setItem('chat_histories', JSON.stringify(chatHistories));
-        }
-        
-        // 生成联系人回复
-        function generateContactReply(message, role, model) {
-            let reply = '';
+            localStorage.setItem('ai_chat_histories', JSON.stringify(chatHistories));
             
-            // 如果没有人物设定，作为只听指令的机器人
-            if (!role.personality || role.personality.trim() === '') {
-                reply = `收到指令："${message}"。正在处理中...`;
-            } else {
-                // 基于API模型生成不同的回复风格
-                switch(model) {
-                    case 'gpt-4':
-                        reply = `（GPT-4模型）作为${role.name}，我对您的问题"${message}"进行了深入分析。`;
-                        break;
-                    case 'claude':
-                        reply = `（Claude模型）基于我的理解，关于"${message}"，我想从几个角度来探讨...`;
-                        break;
-                    case 'ernie':
-                        reply = `（文心一言模型）作为${role.name}，我来回答您的问题："${message}"。`;
-                        break;
-                    case 'custom':
-                        const customSettings = JSON.parse(localStorage.getItem('custom_api_settings')) || {};
-                        reply = `（${customSettings.modelName || '自定义API'}）作为${role.name}，我收到了您的消息："${message}"。`;
-                        break;
-                    default: // gpt-3.5
-                        reply = `作为${role.name}，我对您提到的"${message}"很感兴趣。`;
-                }
-                
-                // 添加人物设定相关的内容
-                const personalityKeywords = role.personality.toLowerCase();
-                
-                if (personalityKeywords.includes('温柔') || personalityKeywords.includes('体贴')) {
-                    reply += ` 我会用温柔体贴的方式回应你。`;
-                } else if (personalityKeywords.includes('幽默') || personalityKeywords.includes('风趣')) {
-                    reply += ` 哈哈，这个话题真有趣！让我用幽默的方式聊聊。`;
-                } else if (personalityKeywords.includes('严谨') || personalityKeywords.includes('专业')) {
-                    reply += ` 从专业角度出发，我认为...`;
-                } else if (personalityKeywords.includes('活泼') || personalityKeywords.includes('开朗')) {
-                    reply += ` 哇！这个问题真棒！让我用活泼开朗的态度来回答！`;
-                }
-                
-                // 添加部分人物设定
-                if (role.personality.length > 0) {
-                    reply += ` ${role.personality.substring(0, 80)}...`;
-                }
-            }
-            
-            // 添加语言风格
-            if (role.languageStyle) {
-                reply += ` 我会用${role.languageStyle}的风格与你交流。`;
-            }
-            
-            // 添加模型特定内容
-            if (model !== 'custom') {
-                reply += ` [使用${apiModels[model].name}模型生成]`;
-            }
-            
-            return reply;
+            // 滚动到底部
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
         
         // 上传图片
@@ -3773,208 +2416,32 @@
             input.click();
         }
         
-        // 编辑状态
+        // 编辑标签
+        function editTag(tag, index) {
+            const newTag = prompt('编辑标签内容：', tag);
+            if (newTag !== null && newTag.trim()) {
+                userInfo.tags[index] = newTag.trim();
+                // 更新标签颜色
+                userInfo.tagColors[index] = getRandomLightColor();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                loadUserInfo();
+                showToast('标签已更新');
+            }
+        }
+        
+        // 编辑状态 - 完全自定义
         function editStatus() {
             const currentStatus = userInfo.status || '点击设置状态';
             const newStatus = prompt('请输入自定义状态：', currentStatus);
             
             if (newStatus !== null && newStatus.trim()) {
                 userInfo.status = newStatus.trim();
-                localStorage.setItem('user_info', JSON.stringify(userInfo));
+                // 更新状态颜色
+                userInfo.statusColor = getRandomLightColor();
+                localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                 loadUserInfo();
                 showToast('状态已更新');
             }
-        }
-        
-        // 应用聊天CSS样式
-        function applyChatCss() {
-            const cssEditor = document.getElementById('chatCssEditor');
-            const cssCode = cssEditor.value.trim();
-            
-            if (!cssCode) {
-                showToast('请输入CSS代码', 'error');
-                return;
-            }
-            
-            try {
-                // 创建样式元素
-                let styleElement = document.getElementById('custom-chat-css');
-                if (!styleElement) {
-                    styleElement = document.createElement('style');
-                    styleElement.id = 'custom-chat-css';
-                    document.head.appendChild(styleElement);
-                }
-                
-                // 应用CSS代码
-                styleElement.textContent = cssCode;
-                
-                // 保存到当前联系人
-                if (editingRoleId) {
-                    const roleIndex = roles.findIndex(r => r.id === editingRoleId);
-                    if (roleIndex !== -1) {
-                        roles[roleIndex].customCss = cssCode;
-                        localStorage.setItem('contacts', JSON.stringify(roles));
-                    }
-                }
-                
-                showToast('聊天样式已应用');
-            } catch (error) {
-                showToast('CSS代码有误：' + error.message, 'error');
-            }
-        }
-        
-        // 应用API模型到所有联系人
-        function applyApiModelToAll() {
-            if (confirm(`确定要将${apiModels[selectedApiModel].name}模型应用到所有联系人吗？`)) {
-                roles.forEach(role => {
-                    appliedApiModels[role.id] = selectedApiModel;
-                });
-                
-                localStorage.setItem('applied_api_models', JSON.stringify(appliedApiModels));
-                showToast(`已将${apiModels[selectedApiModel].name}模型应用到所有联系人`);
-            }
-        }
-        
-        // 应用API模型到选中联系人
-        function applyApiModelToSelected() {
-            // 这里可以打开一个联系人选择器
-            // 为简单起见，我们应用到当前打开的联系人
-            if (currentRoleId) {
-                appliedApiModels[currentRoleId] = selectedApiModel;
-                localStorage.setItem('applied_api_models', JSON.stringify(appliedApiModels));
-                showToast(`已将${apiModels[selectedApiModel].name}模型应用到当前联系人`);
-            } else {
-                showToast('请先打开一个联系人聊天', 'error');
-            }
-        }
-        
-        // 测试自定义API连接
-        function testApiConnection() {
-            const apiUrl = document.getElementById('customApiUrl').value.trim();
-            const apiKey = document.getElementById('customApiKey').value.trim();
-            const modelName = document.getElementById('customModelName').value.trim();
-            
-            if (!apiUrl || !apiKey || !modelName) {
-                showToast('请填写完整的API信息', 'error');
-                return;
-            }
-            
-            // 这里应该发送一个测试请求到API
-            // 由于安全原因，我们只是模拟一个测试
-            showToast('正在测试API连接...', 'info');
-            
-            setTimeout(() => {
-                // 保存自定义API设置
-                const customSettings = {
-                    apiUrl,
-                    apiKey,
-                    modelName,
-                    temperature: parseFloat(document.getElementById('temperatureSlider').value),
-                    maxTokens: parseInt(document.getElementById('maxTokens').value) || 2048
-                };
-                
-                localStorage.setItem('custom_api_settings', JSON.stringify(customSettings));
-                showToast('API连接测试成功！设置已保存。');
-            }, 1500);
-        }
-        
-        // 发布动态
-        function publishMoment() {
-            const textarea = document.getElementById('momentEditorTextarea');
-            const content = textarea.value.trim();
-            
-            if (!content) {
-                showToast('请输入动态内容', 'error');
-                return;
-            }
-            
-            const newMoment = {
-                id: 'moment_' + Date.now(),
-                content: content,
-                time: new Date().toLocaleString(),
-                author: userInfo.name
-            };
-            
-            moments.push(newMoment);
-            localStorage.setItem('moments', JSON.stringify(moments));
-            loadMoments();
-            
-            hideFloat('momentEditorFloat');
-            showToast('动态发布成功');
-        }
-        
-        // 动态编辑器工具功能
-        function setupMomentEditorTools() {
-            const textarea = document.getElementById('momentEditorTextarea');
-            let fontSize = 16;
-            
-            // 导入照片
-            document.getElementById('importPhotoBtn').addEventListener('click', () => {
-                uploadImage((imageData) => {
-                    if (imageData) {
-                        const cursorPos = textarea.selectionStart;
-                        const textBefore = textarea.value.substring(0, cursorPos);
-                        const textAfter = textarea.value.substring(cursorPos);
-                        textarea.value = textBefore + `\n[图片]${imageData.substring(0, 50)}...\n` + textAfter;
-                        showToast('图片已插入');
-                    }
-                });
-            });
-            
-            // 放大字体
-            document.getElementById('increaseFontBtn').addEventListener('click', () => {
-                fontSize = Math.min(fontSize + 2, 32);
-                textarea.style.fontSize = fontSize + 'px';
-            });
-            
-            // 缩小字体
-            document.getElementById('decreaseFontBtn').addEventListener('click', () => {
-                fontSize = Math.max(fontSize - 2, 12);
-                textarea.style.fontSize = fontSize + 'px';
-            });
-            
-            // 加粗
-            document.getElementById('boldTextBtn').addEventListener('click', () => {
-                wrapSelectedText(textarea, '**', '**');
-            });
-            
-            // 斜体
-            document.getElementById('italicTextBtn').addEventListener('click', () => {
-                wrapSelectedText(textarea, '*', '*');
-            });
-            
-            // 下划线
-            document.getElementById('underlineTextBtn').addEventListener('click', () => {
-                wrapSelectedText(textarea, '<u>', '</u>');
-            });
-            
-            // 高亮
-            document.getElementById('highlightTextBtn').addEventListener('click', () => {
-                wrapSelectedText(textarea, '==', '==');
-            });
-            
-            // 添加表情
-            document.getElementById('addEmojiBtn').addEventListener('click', () => {
-                const emojis = ['😊', '😂', '😍', '👍', '❤️', '🎉', '🔥', '⭐', '💯', '👏'];
-                const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
-                const cursorPos = textarea.selectionStart;
-                const textBefore = textarea.value.substring(0, cursorPos);
-                const textAfter = textarea.value.substring(cursorPos);
-                textarea.value = textBefore + randomEmoji + textAfter;
-            });
-        }
-        
-        // 包装选中文本
-        function wrapSelectedText(textarea, before, after) {
-            const start = textarea.selectionStart;
-            const end = textarea.selectionEnd;
-            const selectedText = textarea.value.substring(start, end);
-            const newText = before + selectedText + after;
-            
-            textarea.value = textarea.value.substring(0, start) + newText + textarea.value.substring(end);
-            textarea.selectionStart = start;
-            textarea.selectionEnd = start + newText.length;
-            textarea.focus();
         }
         
         // 设置事件监听器
@@ -3988,20 +2455,6 @@
             document.addEventListener('touchend', (e) => {
                 touchEndX = e.changedTouches[0].clientX;
                 touchEndY = e.changedTouches[0].clientY;
-            });
-            
-            // 点击外部关闭浮窗
-            document.addEventListener('click', (e) => {
-                // 关闭聊天编辑浮窗
-                if (!e.target.closest('.chat-edit-float') && !e.target.closest('.dialog-more-btn')) {
-                    document.getElementById('chatEditFloat').classList.remove('active');
-                }
-                
-                // 关闭其他浮窗
-                if (!e.target.closest('.float-window') && !e.target.closest('.moment-action-btn') && 
-                    !e.target.closest('.moment-more-btn') && !e.target.closest('.add-moment-btn')) {
-                    hideAllFloats();
-                }
             });
             
             // 标签页切换
@@ -4026,67 +2479,41 @@
                 });
             });
             
-            // 添加联系人按钮
+            // 添加角色按钮
             document.getElementById('addRoleBtn').addEventListener('click', () => {
-                showFloat('roleManagerFloat');
+                document.getElementById('roleManagerModal').classList.add('active');
                 loadRoleList();
             });
             
             // 我的联系人按钮
             document.getElementById('myRolesBtn').addEventListener('click', () => {
-                showFloat('roleManagerFloat');
+                document.getElementById('roleManagerModal').classList.add('active');
                 loadRoleList();
             });
             
-            // 设置按钮
-            document.getElementById('settingsBtn').addEventListener('click', () => {
-                showFloat('settingsFloat');
-            });
-            
-            // 关闭联系人管理器
+            // 关闭角色管理器
             document.getElementById('closeRoleManager').addEventListener('click', () => {
-                hideFloat('roleManagerFloat');
+                document.getElementById('roleManagerModal').classList.remove('active');
             });
             
-            // 添加新联系人按钮
+            // 添加新角色按钮
             document.getElementById('addNewRoleBtn').addEventListener('click', () => {
-                hideFloat('roleManagerFloat');
-                showFloat('roleEditorFloat');
+                document.getElementById('roleManagerModal').classList.remove('active');
+                document.getElementById('roleEditorModal').classList.add('active');
                 editingRoleId = null;
                 
                 // 重置表单
                 document.getElementById('roleName').value = '';
-                document.getElementById('roleNote').value = '';
                 document.getElementById('rolePersonality').value = '';
-                document.getElementById('roleLanguageStyle').value = '';
-                document.getElementById('roleOfflineStyle').value = '';
-                document.getElementById('chatCssEditor').value = `/* 联系人消息气泡 */
-.contact-message .message-content {
-    background: var(--contact-bubble);
-    color: var(--contact-text);
-    border-radius: 18px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}
-
-/* 用户消息气泡 */
-.user-message .message-content {
-    background: var(--user-bubble);
-    color: var(--user-text);
-    border-radius: 18px;
-    padding: 12px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-}`;
                 document.getElementById('roleAvatarPreview').innerHTML = '<i class="fas fa-user"></i>';
-                document.getElementById('chatBackgroundPreview').innerHTML = '<span>暂无背景</span>';
             });
             
-            // 关闭联系人编辑器
+            // 关闭角色编辑器
             document.getElementById('closeRoleEditor').addEventListener('click', () => {
-                hideFloat('roleEditorFloat');
+                document.getElementById('roleEditorModal').classList.remove('active');
             });
             
-            // 上传联系人头像
+            // 上传角色头像
             document.getElementById('uploadRoleAvatar').addEventListener('click', () => {
                 document.getElementById('roleAvatarInput').click();
             });
@@ -4103,35 +2530,10 @@
                 }
             });
             
-            // 上传聊天背景
-            document.getElementById('uploadChatBackground').addEventListener('click', () => {
-                document.getElementById('chatBackgroundInput').click();
-            });
-            
-            document.getElementById('chatBackgroundInput').addEventListener('change', (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        const preview = document.getElementById('chatBackgroundPreview');
-                        preview.innerHTML = `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                        preview.style.background = `url('${e.target.result}') center/cover no-repeat`;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-            
-            // 应用聊天CSS样式按钮
-            document.getElementById('applyChatCssBtn').addEventListener('click', applyChatCss);
-            
-            // 保存联系人
+            // 保存角色
             document.getElementById('saveRoleBtn').addEventListener('click', () => {
                 const name = document.getElementById('roleName').value.trim();
-                const note = document.getElementById('roleNote').value.trim();
                 const personality = document.getElementById('rolePersonality').value.trim();
-                const languageStyle = document.getElementById('roleLanguageStyle').value.trim();
-                const offlineStyle = document.getElementById('roleOfflineStyle').value.trim();
-                const cssCode = document.getElementById('chatCssEditor').value.trim();
                 
                 if (!name) {
                     showToast('请输入联系人名称', 'error');
@@ -4143,59 +2545,39 @@
                 const avatarImg = avatarPreview.querySelector('img');
                 const avatar = avatarImg ? avatarImg.src : '';
                 
-                // 获取聊天背景
-                const bgPreview = document.getElementById('chatBackgroundPreview');
-                const bgImg = bgPreview.querySelector('img');
-                const chatBackground = bgImg ? bgImg.src : '';
-                
                 if (editingRoleId) {
-                    // 更新现有联系人
+                    // 更新现有角色
                     const roleIndex = roles.findIndex(r => r.id === editingRoleId);
                     if (roleIndex !== -1) {
                         roles[roleIndex] = {
                             ...roles[roleIndex],
                             name,
-                            note,
-                            personality, // 可以为空
-                            languageStyle,
-                            offlineStyle,
-                            customCss: cssCode,
-                            chatBackground,
-                            avatar,
-                            updatedAt: Date.now()
+                            personality,
+                            avatar
                         };
                     }
                 } else {
-                    // 创建新联系人 - 应用当前选中的API模型
+                    // 创建新角色
                     const newRole = {
-                        id: 'contact_' + Date.now(),
+                        id: 'role_' + Date.now(),
                         name,
-                        note,
-                        personality, // 可以为空
-                        languageStyle,
-                        offlineStyle,
-                        customCss: cssCode,
-                        chatBackground,
+                        personality,
                         avatar,
                         createdAt: Date.now()
                     };
                     roles.push(newRole);
-                    
-                    // 应用当前选中的API模型到新联系人
-                    appliedApiModels[newRole.id] = selectedApiModel;
-                    localStorage.setItem('applied_api_models', JSON.stringify(appliedApiModels));
                 }
                 
                 // 保存到本地存储
-                localStorage.setItem('contacts', JSON.stringify(roles));
+                localStorage.setItem('ai_roles', JSON.stringify(roles));
                 
                 // 关闭编辑器
-                hideFloat('roleEditorFloat');
+                document.getElementById('roleEditorModal').classList.remove('active');
                 
                 // 更新UI
                 loadChatList();
                 
-                showToast('联系人保存成功！');
+                showToast('联系人保存成功');
             });
             
             // 编辑动态封面
@@ -4204,7 +2586,7 @@
                     if (imageData) {
                         document.getElementById('coverBackground').style.background = `url('${imageData}') center/cover no-repeat`;
                         userInfo.coverBackground = `url('${imageData}') center/cover no-repeat`;
-                        localStorage.setItem('user_info', JSON.stringify(userInfo));
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                         showToast('封面已更新');
                     }
                 });
@@ -4215,7 +2597,7 @@
                 uploadImage((imageData) => {
                     if (imageData) {
                         userInfo.avatar = imageData;
-                        localStorage.setItem('user_info', JSON.stringify(userInfo));
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                         loadUserInfo();
                         showToast('头像已更新');
                     }
@@ -4227,7 +2609,7 @@
                 uploadImage((imageData) => {
                     if (imageData) {
                         userInfo.avatar = imageData;
-                        localStorage.setItem('user_info', JSON.stringify(userInfo));
+                        localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                         loadUserInfo();
                         showToast('头像已更新');
                     }
@@ -4239,7 +2621,7 @@
                 const newBio = prompt('请输入个性签名：', userInfo.bio || '');
                 if (newBio !== null) {
                     userInfo.bio = newBio;
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('个性签名已更新');
                 }
@@ -4250,7 +2632,7 @@
                 const newName = prompt('请输入用户名：', userInfo.name || '');
                 if (newName !== null && newName.trim()) {
                     userInfo.name = newName.trim();
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('用户名已更新');
                 }
@@ -4261,7 +2643,7 @@
                 const newName = prompt('请输入用户名：', userInfo.name || '');
                 if (newName !== null && newName.trim()) {
                     userInfo.name = newName.trim();
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('用户名已更新');
                 }
@@ -4272,7 +2654,7 @@
                 const newSignature = prompt('请输入个性签名：', userInfo.profileSignature || '');
                 if (newSignature !== null) {
                     userInfo.profileSignature = newSignature;
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('个性签名已更新');
                 }
@@ -4283,7 +2665,7 @@
                 const newId = prompt('请输入用户ID：', userInfo.userId || '');
                 if (newId !== null) {
                     userInfo.userId = newId;
-                    localStorage.setItem('user_info', JSON.stringify(userInfo));
+                    localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
                     loadUserInfo();
                     showToast('用户ID已更新');
                 }
@@ -4292,85 +2674,50 @@
             // 编辑状态
             document.getElementById('profileStatus').addEventListener('click', editStatus);
             
+            // 添加标签（双击标签容器空白处）
+            const profileTagsContainer = document.getElementById('profileTagsContainer');
+            profileTagsContainer.addEventListener('dblclick', (e) => {
+                if (e.target === profileTagsContainer) {
+                    const newTag = prompt('添加新标签（最多3个）：');
+                    if (newTag !== null && newTag.trim()) {
+                        if (!userInfo.tags) {
+                            userInfo.tags = [];
+                            userInfo.tagColors = [];
+                        }
+                        
+                        if (userInfo.tags.length < 3) {
+                            userInfo.tags.push(newTag.trim());
+                            userInfo.tagColors.push(getRandomLightColor());
+                            localStorage.setItem('ai_user_info', JSON.stringify(userInfo));
+                            loadUserInfo();
+                            showToast('标签已添加');
+                        } else {
+                            showToast('最多只能添加3个标签', 'error');
+                        }
+                    }
+                }
+            });
+            
             // 添加动态
             document.getElementById('addMomentBtn').addEventListener('click', () => {
-                document.getElementById('momentEditorTextarea').value = '';
-                showFloat('momentEditorFloat');
+                const content = prompt('请输入动态内容：');
+                if (content && content.trim()) {
+                    const newMoment = {
+                        id: 'moment_' + Date.now(),
+                        content: content.trim(),
+                        time: new Date().toLocaleString(),
+                        author: userInfo.name
+                    };
+                    
+                    moments.push(newMoment);
+                    localStorage.setItem('ai_moments', JSON.stringify(moments));
+                    loadMoments();
+                    showToast('动态发布成功');
+                }
             });
             
             // 返回聊天列表
             document.getElementById('backToChatList').addEventListener('click', () => {
-                document.getElementById('chatDialog').classList.remove('active');
-            });
-            
-            // 聊天对话框更多按钮
-            document.getElementById('dialogMoreBtn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const float = document.getElementById('chatEditFloat');
-                float.classList.toggle('active');
-            });
-            
-            // 在聊天中编辑联系人
-            document.getElementById('editContactInChatBtn').addEventListener('click', () => {
-                if (currentRoleId) {
-                    const role = roles.find(r => r.id === currentRoleId);
-                    if (role) {
-                        editingRoleId = currentRoleId;
-                        
-                        // 填充表单
-                        document.getElementById('roleName').value = role.name;
-                        document.getElementById('roleNote').value = role.note || '';
-                        document.getElementById('rolePersonality').value = role.personality || '';
-                        document.getElementById('roleLanguageStyle').value = role.languageStyle || '';
-                        document.getElementById('roleOfflineStyle').value = role.offlineStyle || '';
-                        document.getElementById('chatCssEditor').value = role.customCss || '';
-                        
-                        // 设置头像预览
-                        const avatarPreview = document.getElementById('roleAvatarPreview');
-                        if (role.avatar) {
-                            avatarPreview.innerHTML = `<img src="${role.avatar}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                        } else {
-                            avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
-                        }
-                        
-                        // 设置背景预览
-                        const bgPreview = document.getElementById('chatBackgroundPreview');
-                        if (role.chatBackground) {
-                            bgPreview.innerHTML = `<img src="${role.chatBackground}" style="width: 100%; height: 100%; object-fit: cover;">`;
-                            bgPreview.style.background = `url('${role.chatBackground}') center/cover no-repeat`;
-                        } else {
-                            bgPreview.innerHTML = '<span>暂无背景</span>';
-                            bgPreview.style.background = '#f5f5f5';
-                        }
-                        
-                        // 打开编辑器
-                        document.getElementById('chatEditFloat').classList.remove('active');
-                        showFloat('roleEditorFloat');
-                    }
-                }
-            });
-            
-            // 在聊天中修改聊天样式
-            document.getElementById('changeChatStyleBtn').addEventListener('click', () => {
-                if (currentRoleId) {
-                    const role = roles.find(r => r.id === currentRoleId);
-                    if (role) {
-                        editingRoleId = currentRoleId;
-                        
-                        // 填充CSS编辑器
-                        document.getElementById('chatCssEditor').value = role.customCss || '';
-                        
-                        // 打开编辑器
-                        document.getElementById('chatEditFloat').classList.remove('active');
-                        showFloat('roleEditorFloat');
-                    }
-                }
-            });
-            
-            // 在聊天中删除联系人
-            document.getElementById('deleteContactInChatBtn').addEventListener('click', () => {
-                document.getElementById('chatEditFloat').classList.remove('active');
-                deleteContact(currentRoleId);
                 document.getElementById('chatDialog').classList.remove('active');
             });
             
@@ -4384,18 +2731,20 @@
                 }
             });
             
-            // 动态操作浮窗事件
+            // 动态操作弹窗事件
             document.getElementById('editMomentBtn').addEventListener('click', editMoment);
             document.getElementById('deleteMomentBtn').addEventListener('click', deleteMoment);
             
-            // 点赞浮窗关闭
-            document.getElementById('closeLikesFloat').addEventListener('click', () => {
-                hideFloat('likesFloat');
+            // 关闭动态操作弹窗
+            document.getElementById('momentActionsModal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    document.getElementById('momentActionsModal').classList.remove('active');
+                }
             });
             
-            // 评论浮窗事件
-            document.getElementById('closeCommentsFloat').addEventListener('click', () => {
-                hideFloat('commentsFloat');
+            // 评论弹窗事件
+            document.getElementById('closeCommentsModal').addEventListener('click', () => {
+                document.getElementById('commentsModal').classList.remove('active');
             });
             
             // 发送评论
@@ -4408,91 +2757,22 @@
                 }
             });
             
-            // 消息编辑浮窗事件
-            document.getElementById('closeMessageEditFloat').addEventListener('click', () => {
-                hideFloat('messageEditFloat');
+            // 关闭评论弹窗
+            document.getElementById('commentsModal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    document.getElementById('commentsModal').classList.remove('active');
+                }
             });
             
-            document.getElementById('saveMessageEditBtn').addEventListener('click', saveMessageEdit);
-            
-            // 动态编辑浮窗事件
-            document.getElementById('closeMomentEditorFloat').addEventListener('click', () => {
-                hideFloat('momentEditorFloat');
-            });
-            
-            document.getElementById('publishMomentBtn').addEventListener('click', publishMoment);
-            
-            // 动态编辑器工具设置
-            setupMomentEditorTools();
-            
-            // 标签编辑浮窗事件
-            document.getElementById('closeTagEditFloat').addEventListener('click', () => {
-                hideFloat('tagEditFloat');
-            });
-            
-            document.getElementById('saveTagEditBtn').addEventListener('click', saveTagEdit);
-            
-            // 设置浮窗事件
-            document.getElementById('closeSettingsFloat').addEventListener('click', () => {
-                hideFloat('settingsFloat');
-            });
-            
-            // API模型选择
-            document.querySelectorAll('.api-model-item').forEach(item => {
-                item.addEventListener('click', () => {
-                    // 移除所有选中状态
-                    document.querySelectorAll('.api-model-item').forEach(i => {
-                        i.classList.remove('selected');
-                    });
-                    
-                    // 添加当前选中状态
-                    item.classList.add('selected');
-                    
-                    // 更新选中的模型
-                    selectedApiModel = item.dataset.model;
-                    localStorage.setItem('selected_api_model', selectedApiModel);
-                    
-                    // 更新显示
-                    document.getElementById('currentModelDisplay').textContent = apiModels[selectedApiModel].name;
-                    
-                    // 显示/隐藏自定义API设置
-                    loadApiModelSelection();
-                    
-                    showToast(`已选择${apiModels[selectedApiModel].name}模型`);
-                });
-            });
-            
-            // 温度滑块
-            const tempSlider = document.getElementById('temperatureSlider');
-            const tempValue = document.getElementById('temperatureValue');
-            tempSlider.addEventListener('input', () => {
-                tempValue.textContent = tempSlider.value;
-            });
-            
-            // 应用API模型到所有联系人
-            document.getElementById('applyToAllBtn').addEventListener('click', applyApiModelToAll);
-            
-            // 应用API模型到选中联系人
-            document.getElementById('applyToSelectedBtn').addEventListener('click', applyApiModelToSelected);
-            
-            // 测试API连接
-            document.getElementById('testApiConnectionBtn').addEventListener('click', testApiConnection);
-            
-            // 点击页面其他区域关闭浮窗
+            // 点击弹窗外部关闭
             document.addEventListener('click', (e) => {
-                // 如果点击的不是浮窗内容，关闭所有浮窗
-                if (!e.target.closest('.float-window') && 
-                    !e.target.closest('.add-role-btn') &&
-                    !e.target.closest('.add-moment-btn') &&
-                    !e.target.closest('.moment-action-btn') &&
-                    !e.target.closest('.moment-more-btn') &&
-                    !e.target.closest('.dialog-more-btn')) {
-                    hideAllFloats();
+                if (e.target.classList.contains('modal')) {
+                    e.target.classList.remove('active');
                 }
             });
         }
         
-        // 加载联系人列表
+        // 加载角色列表
         function loadRoleList() {
             const roleList = document.getElementById('roleList');
             roleList.innerHTML = '';
@@ -4502,39 +2782,18 @@
                 return;
             }
             
-            // 分离置顶和非置顶联系人
-            const pinned = [];
-            const unpinned = [];
-            
             roles.forEach(role => {
-                if (pinnedContacts.includes(role.id)) {
-                    pinned.push(role);
-                } else {
-                    unpinned.push(role);
-                }
-            });
-            
-            // 合并列表（置顶在前）
-            const sortedRoles = [...pinned, ...unpinned];
-            
-            sortedRoles.forEach(role => {
-                const isPinned = pinnedContacts.includes(role.id);
-                
                 const roleItem = document.createElement('div');
                 roleItem.className = 'role-item';
                 roleItem.innerHTML = `
-                    ${isPinned ? '<div class="pinned-indicator"><i class="fas fa-thumbtack"></i></div>' : ''}
                     <div class="role-header">
                         <div class="role-avatar">
                             ${role.avatar ? `<img src="${role.avatar}" alt="${role.name}">` : role.name.charAt(0)}
                         </div>
                         <div class="role-info">
-                            <div class="role-note-container">
-                                <div class="role-note">${role.note || role.name}</div>
-                                <div class="role-name-small">${role.name}</div>
-                            </div>
+                            <div class="role-name">${role.name}</div>
                             <div class="role-description">
-                                ${role.personality ? (role.personality.length > 50 ? role.personality.substring(0, 50) + '...' : role.personality) : '只听指令的机器人'}
+                                ${role.personality ? (role.personality.length > 50 ? role.personality.substring(0, 50) + '...' : role.personality) : '暂无描述'}
                             </div>
                         </div>
                     </div>
@@ -4542,7 +2801,7 @@
                 
                 roleItem.addEventListener('click', () => {
                     openChatDialog(role.id);
-                    hideFloat('roleManagerFloat');
+                    document.getElementById('roleManagerModal').classList.remove('active');
                 });
                 
                 roleList.appendChild(roleItem);
