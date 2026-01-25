@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机测试</title>
+    <style>
+        * { margin: 0; padding: 0; }
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container { max-width: 500px; margin: 0 auto; }
+        .test-box { 
+            background: rgba(255,255,255,0.1); 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 10px;
+        }
+        .success { background: rgba(7, 193, 96, 0.2); }
+        .error { background: rgba(245, 34, 45, 0.2); }
+        button { 
+            padding: 15px; 
+            width: 100%; 
+            margin: 10px 0; 
+            border: none; 
+            border-radius: 8px; 
+            background: #07c160; 
+            color: white; 
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📱 手机测试页面</h1>
+        
+        <div class="test-box" id="test1">1. 页面加载...</div>
+        <div class="test-box" id="test2">2. JavaScript测试...</div>
+        <div class="test-box" id="test3">3. 文件检查...</div>
+        
+        <button onclick="runAllTests()">开始测试</button>
+        <button onclick="testOriginalApp()" style="background:#1890ff;">测试原版应用</button>
+        <button onclick="clearCache()" style="background:#f5222d;">清除缓存</button>
+        
+        <div style="margin-top: 30px; padding: 15px; background: rgba(0,0,0,0.2); border-radius: 10px;">
+            <h3>GitHub Pages使用提示：</h3>
+            <p>1. 确保所有文件在 <code>根目录</code></p>
+            <p>2. 访问地址应该是：<code>https://你的用户名.github.io</code></p>
+            <p>3. 确保文件名完全匹配（区分大小写）</p>
+        </div>
+    </div>
+    
+    <script>
+        // 手机端测试
+        function runAllTests() {
+            // 测试1：页面加载
+            document.getElementById('test1').innerHTML = '✅ 页面加载正常';
+            document.getElementById('test1').className = 'test-box success';
+            
+            // 测试2：JavaScript
+            setTimeout(function() {
+                try {
+                    let test = "JavaScript正常";
+                    document.getElementById('test2').innerHTML = '✅ ' + test;
+                    document.getElementById('test2').className = 'test-box success';
+                } catch (e) {
+                    document.getElementById('test2').innerHTML = '❌ JavaScript错误: ' + e;
+                    document.getElementById('test2').className = 'test-box error';
+                }
+            }, 500);
+            
+            // 测试3：文件检查
+            setTimeout(function() {
+                checkFile('style.css');
+                checkFile('app.js');
+            }, 1000);
+        }
+        
+        function checkFile(filename) {
+            var img = new Image();
+            img.onload = function() {
+                document.getElementById('test3').innerHTML += '<br>✅ ' + filename + ' 存在';
+                document.getElementById('test3').className = 'test-box success';
+            };
+            img.onerror = function() {
+                document.getElementById('test3').innerHTML += '<br>❌ ' + filename + ' 不存在';
+                document.getElementById('test3').className = 'test-box error';
+            };
+            img.src = filename + '?t=' + Date.now(); // 加时间戳避免缓存
+        }
+        
+        function testOriginalApp() {
+            // 直接尝试加载原版
+            var script = document.createElement('script');
+            script.src = 'app.js?v=' + Date.now(); // 避免缓存
+            
+            script.onload = function() {
+                alert('app.js 加载成功！');
+                // 尝试启动应用
+                if (typeof App !== 'undefined') {
+                    try {
+                        App.init();
+                        alert('应用启动成功！');
+                    } catch (e) {
+                        alert('应用启动失败：' + e.message);
+                    }
+                }
+            };
+            
+            script.onerror = function() {
+                alert('app.js 加载失败！请检查文件是否存在');
+            };
+            
+            document.head.appendChild(script);
+        }
+        
+        function clearCache() {
+            if (confirm('清除浏览器缓存？')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                location.reload();
+            }
+        }
+        
+        // 自动运行测试
+        runAllTests();
+    </script>
+</body>
+</html>
