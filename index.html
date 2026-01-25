@@ -14,27 +14,64 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: #f5f5f5;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             z-index: 9999;
-            transition: opacity 0.3s;
+            transition: opacity 0.5s ease;
         }
         
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid #07c160;
-            border-top-color: transparent;
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
+        }
+        
+        /* 开发工具面板 */
+        .dev-tools-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 10px;
+            color: white;
+            font-size: 12px;
+            z-index: 9998;
+            display: none;
+        }
+        
+        .dev-tools-panel.show {
+            display: block;
+        }
+        
+        .dev-tools-btn {
+            background: #07c160;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 2px;
+            cursor: pointer;
+            font-size: 11px;
         }
     </style>
 </head>
@@ -42,8 +79,20 @@
     <!-- 加载屏 -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-spinner"></div>
-        <div>加载中...</div>
+        <div class="loading-text">quq小手机加载中...</div>
     </div>
+    
+    <!-- 开发工具面板（开发时可用） -->
+<div class="dev-tools-panel" id="devToolsPanel">
+    <button class="dev-tools-btn" onclick="DevTools.clearAllData()">清空数据</button>
+    <button class="dev-tools-btn" onclick="DevTools.generateTestData()">测试数据</button>
+    <!-- 新增备份功能按钮 -->
+    <button class="dev-tools-btn" onclick="DevTools.quickBackup()">快速备份</button>
+    <button class="dev-tools-btn" onclick="DevTools.createBackup()">完整备份</button>
+    <button class="dev-tools-btn" onclick="DevTools.importBackup()">导入备份</button>
+    <button class="dev-tools-btn" onclick="DevTools.setupAutoBackup()">自动备份</button>
+    <button class="dev-tools-btn" onclick="DevTools.togglePanel()">隐藏</button>
+</div>
     
     <!-- 主应用容器 -->
     <div class="app-container" id="app" style="display: none;">
@@ -193,12 +242,76 @@
         </div>
     </div>
     
-    <!-- 弹窗容器（这些会由JS动态创建） -->
-    <div id="modalContainer"></div>
-    <div id="floatContainer"></div>
-    <div id="dialogContainer"></div>
+<!-- 弹窗容器（这些会由JS动态创建） -->
+<div id="modalContainer"></div>
+<div id="floatContainer"></div>
+<div id="dialogContainer"></div>
+
+<!-- 备份状态指示器 -->
+<div class="backup-status-indicator" id="backupIndicator" style="display: none;">
+    <i class="fas fa-save"></i>
+</div>
+
+<!-- 引入开发工具（放在前面以便调试） -->
+<script src="dev-tools.js"></script>
+
+<!-- 引入主应用 -->
+<script src="app.js"></script>
     
-    <!-- 引入JavaScript -->
-    <script src="app.js"></script>
-</body>
-</html>
+    <script>
+    // 双击状态栏显示开发工具
+    let tapCount = 0;
+    let lastTapTime = 0;
+    document.querySelector('.status-bar').addEventListener('click', () => {
+        const currentTime = Date.now();
+        if (currentTime - lastTapTime < 300) {
+            tapCount++;
+            if (tapCount >= 5) {
+                document.getElementById('devToolsPanel').classList.add('show');
+                tapCount = 0;
+            }
+        } else {
+            tapCount = 1;
+        }
+        lastTapTime = currentTime;
+        
+        // 5秒后重置
+        setTimeout(() => {
+            tapCount = 0;
+        }, 5000);
+    });
+    
+    // === 新增备份状态指示器控制 ===
+    document.addEventListener('DOMContentLoaded', function() {
+        // 检查是否需要显示备份指示器
+        const lastBackupTime = localStorage.getItem('last_auto_backup');
+        if (lastBackupTime) {
+            const lastTime = parseInt(lastBackupTime);
+            const now = Date.now();
+            const daysSinceLastBackup = Math.floor((now - lastTime) / (1000 * 60 * 60 * 24));
+            
+            // 如果超过3天没有备份，显示提醒
+            if (daysSinceLastBackup >= 3) {
+                const backupIndicator = document.getElementById('backupIndicator');
+                if (backupIndicator) {
+                    backupIndicator.style.display = 'flex';
+                    backupIndicator.title = `已经 ${daysSinceLastBackup} 天没有备份，建议及时备份数据`;
+                    
+                    // 点击备份指示器
+                    backupIndicator.addEventListener('click', function() {
+                        if (confirm(`已经 ${daysSinceLastBackup} 天没有备份数据。\n\n是否现在创建备份？`)) {
+                            DevTools.createBackup();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // 自动检查自动备份
+        setTimeout(() => {
+            if (typeof DevTools !== 'undefined') {
+                DevTools.checkAutoBackup();
+            }
+        }, 5000); // 5秒后检查
+    });
+</script>
