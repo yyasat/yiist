@@ -4,8 +4,27 @@
 // 最后更新: 2024年
 // 描述: 仿微信风格的AI联系人聊天应用
 
-// 防止错误
-try {
+// ========== 错误捕获和兼容性修复 ==========
+console.log('🚀 开始加载 app.js');
+
+// 全局错误捕获
+window.addEventListener('error', function(e) {
+    console.error('全局错误:', e.error);
+});
+
+// 捕获Promise错误
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Promise错误:', e.reason);
+});
+
+// 确保必要的对象存在
+if (!window.console) window.console = { log: function(){}, error: function(){}, warn: function(){} };
+if (!window.JSON) window.JSON = { parse: function(){}, stringify: function(){} };
+
+// 创建全局对象（如果不存在）
+window.quq = window.quq || {};
+
+console.log('✅ app.js 基础加载完成');
 
 // ========== 配置模块 ==========
 const Config = {
@@ -2960,4 +2979,54 @@ if ('serviceWorker' in navigator && Config.debugMode) {
     });
 }
 
-} catch(e) { console.log('App error:', e); }
+// ========== 应用启动成功标志 ==========
+console.log('🎉 app.js 所有代码加载完成');
+
+// 通知页面应用已加载完成
+setTimeout(function() {
+    try {
+        // 隐藏加载屏，显示应用
+        var loading = document.getElementById('loadingScreen');
+        var app = document.getElementById('app');
+        
+        if (loading && app) {
+            // 先淡出加载屏
+            loading.style.opacity = '0';
+            
+            setTimeout(function() {
+                loading.style.display = 'none';
+                app.style.display = 'flex';
+                console.log('✅ 应用界面已显示');
+                
+                // 尝试初始化应用
+                if (typeof App !== 'undefined') {
+                    setTimeout(function() {
+                        try {
+                            App.init();
+                        } catch (initError) {
+                            console.error('App.init() 错误:', initError);
+                            Utils.showToast('应用初始化出错，部分功能可能受限', 'error');
+                        }
+                    }, 100);
+                }
+            }, 500);
+        }
+    } catch (error) {
+        console.error('启动显示错误:', error);
+    }
+}, 1500);
+
+// 如果5秒后还在加载，强制显示
+setTimeout(function() {
+    var loading = document.getElementById('loadingScreen');
+    var app = document.getElementById('app');
+    
+    if (loading && loading.style.display !== 'none' && app && app.style.display === 'none') {
+        console.log('⚠️ 加载超时，强制显示');
+        loading.style.display = 'none';
+        app.style.display = 'flex';
+        if (typeof Utils !== 'undefined') {
+            Utils.showToast('应用已就绪', 'info');
+        }
+    }
+}, 8000);
