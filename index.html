@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>quq小手机</title>
-    <!-- 修复1：确保文件路径正确 -->
-    <base href="./">
-    <!-- 修复2：防止浏览器模式问题 -->
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
     <style>
@@ -78,54 +73,20 @@
             cursor: pointer;
             font-size: 11px;
         }
-        
-        /* 备份状态指示器 */
-        .backup-status-indicator {
-            position: fixed;
-            bottom: 70px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background: rgba(7, 193, 96, 0.9);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 99;
-            box-shadow: 0 6px 20px rgba(7, 193, 96, 0.3);
-            transition: all 0.3s ease;
-            display: none;
-        }
-        
-        .backup-status-indicator:hover {
-            transform: scale(1.1);
-        }
     </style>
 </head>
 <body>
-    <!-- 加载屏 - 简化版本 -->
+    <!-- 加载屏 -->
     <div class="loading-screen" id="loadingScreen">
         <div class="loading-spinner"></div>
-        <div class="loading-text" id="loadingText">quq小手机加载中...</div>
-        <!-- 错误提示区域 -->
-        <div id="errorMessage" style="display: none; margin-top: 20px; padding: 15px; background: rgba(255,0,0,0.1); border-radius: 10px; max-width: 80%; color: #ff4444; font-size: 14px;"></div>
+        <div class="loading-text">quq小手机加载中...</div>
     </div>
     
     <!-- 开发工具面板（开发时可用） -->
     <div class="dev-tools-panel" id="devToolsPanel">
         <button class="dev-tools-btn" onclick="DevTools.clearAllData()">清空数据</button>
         <button class="dev-tools-btn" onclick="DevTools.generateTestData()">测试数据</button>
-        <button class="dev-tools-btn" onclick="DevTools.quickBackup()">快速备份</button>
-        <button class="dev-tools-btn" onclick="DevTools.createBackup()">完整备份</button>
         <button class="dev-tools-btn" onclick="DevTools.togglePanel()">隐藏</button>
-    </div>
-    
-    <!-- 备份状态指示器 -->
-    <div class="backup-status-indicator" id="backupIndicator" onclick="DevTools.createBackup()">
-        <i class="fas fa-save"></i>
     </div>
     
     <!-- 主应用容器 -->
@@ -242,19 +203,19 @@
                     </div>
                 </div>
                 <div class="profile-menu">
-                    <!-- 备份与恢复 -->
-                    <div class="menu-item" id="backupBtn">
-                        <div class="menu-icon">
-                            <i class="fas fa-save"></i>
-                        </div>
-                        <div class="menu-text">备份与恢复</div>
-                    </div>
                     <!-- 我的联系人 -->
                     <div class="menu-item" id="myRolesBtn">
                         <div class="menu-icon">
                             <i class="fas fa-address-book"></i>
                         </div>
                         <div class="menu-text">我的联系人</div>
+                    </div>
+                    <!-- 备份与恢复 -->
+                    <div class="menu-item" id="backupBtn">
+                        <div class="menu-icon">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                        </div>
+                        <div class="menu-text">备份与恢复</div>
                     </div>
                     <!-- 设置 -->
                     <div class="menu-item" id="settingsBtn">
@@ -288,163 +249,34 @@
     <div id="floatContainer"></div>
     <div id="dialogContainer"></div>
     
-    <!-- 引入开发工具 -->
+    <!-- 引入开发工具（放在前面以便调试） -->
     <script src="dev-tools.js"></script>
     
     <!-- 引入主应用 -->
     <script src="app.js"></script>
     
     <script>
-        // ========== 手机端安全启动脚本 ==========
-        console.log('📱 手机端启动脚本开始');
-        
-        // 检查浏览器支持
-        function checkBrowserSupport() {
-            var unsupported = false;
-            var errorMsg = '';
-            
-            try {
-                // 检查localStorage
-                if (typeof localStorage === 'undefined') {
-                    unsupported = true;
-                    errorMsg = '您的浏览器不支持本地存储(localStorage)';
+        // 双击状态栏显示开发工具
+        let tapCount = 0;
+        let lastTapTime = 0;
+        document.querySelector('.status-bar').addEventListener('click', () => {
+            const currentTime = Date.now();
+            if (currentTime - lastTapTime < 300) {
+                tapCount++;
+                if (tapCount >= 5) {
+                    document.getElementById('devToolsPanel').classList.add('show');
+                    tapCount = 0;
                 }
-                
-                // 检查JSON
-                if (typeof JSON === 'undefined') {
-                    unsupported = true;
-                    errorMsg = '您的浏览器不支持JSON';
-                }
-                
-                // 尝试使用ES6语法
-                eval('const test = 1;');
-                
-            } catch (e) {
-                unsupported = true;
-                errorMsg = '浏览器JavaScript支持不完整';
+            } else {
+                tapCount = 1;
             }
+            lastTapTime = currentTime;
             
-            return { unsupported: unsupported, errorMsg: errorMsg };
-        }
-        
-        // 显示错误信息
-        function showError(message) {
-            var loadingText = document.getElementById('loadingText');
-            var errorDiv = document.getElementById('errorMessage');
-            
-            if (loadingText) loadingText.textContent = '加载遇到问题';
-            if (errorDiv) {
-                errorDiv.innerHTML = `
-                    <div style="font-weight: bold; margin-bottom: 8px;">${message}</div>
-                    <div style="font-size: 13px; margin-bottom: 10px;">建议使用 Chrome、Firefox、Safari 或 Edge 浏览器</div>
-                    <button onclick="location.reload()" style="padding: 10px 20px; background: #07c160; color: white; border: none; border-radius: 5px; margin-right: 10px; cursor: pointer;">
-                        刷新页面
-                    </button>
-                    <button onclick="showSimpleVersion()" style="padding: 10px 20px; background: #1890ff; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                        简化版本
-                    </button>
-                `;
-                errorDiv.style.display = 'block';
-            }
-        }
-        
-        // 显示简化版本
-        function showSimpleVersion() {
-            window.location.href = 'quq-mobile.html';
-        }
-        
-        // 安全启动应用
-        function safeStartApp() {
-            console.log('🔄 开始安全启动流程');
-            
-            // 检查浏览器支持
-            var support = checkBrowserSupport();
-            if (support.unsupported) {
-                showError(support.errorMsg);
-                return;
-            }
-            
-            // 设置超时机制：8秒后强制显示
-            var forceShowTimer = setTimeout(function() {
-                console.log('⏰ 超时保护：强制显示应用界面');
-                var loading = document.getElementById('loadingScreen');
-                var app = document.getElementById('app');
-                if (loading && app) {
-                    loading.style.display = 'none';
-                    app.style.display = 'flex';
-                    // 显示简单的提示
-                    if (typeof Utils !== 'undefined') {
-                        Utils.showToast('应用就绪');
-                    }
-                }
-            }, 8000);
-            
-            // 设置双击状态栏事件（开发工具）
-            setupDevTools();
-            
-            console.log('✅ 启动检查完成，等待主应用初始化');
-        }
-        
-        // 设置开发工具双击事件
-        function setupDevTools() {
-            var tapCount = 0;
-            var lastTapTime = 0;
-            var statusBar = document.querySelector('.status-bar');
-            
-            if (statusBar) {
-                statusBar.addEventListener('click', function() {
-                    var currentTime = Date.now();
-                    if (currentTime - lastTapTime < 300) {
-                        tapCount++;
-                        if (tapCount >= 5) {
-                            var panel = document.getElementById('devToolsPanel');
-                            if (panel) {
-                                panel.classList.add('show');
-                                console.log('🔧 开发工具已显示');
-                            }
-                            tapCount = 0;
-                        }
-                    } else {
-                        tapCount = 1;
-                    }
-                    lastTapTime = currentTime;
-                    
-                    setTimeout(function() {
-                        tapCount = 0;
-                    }, 5000);
-                });
-            }
-        }
-        
-        // 检查备份提醒
-        function checkBackupReminder() {
-            var lastBackupTime = localStorage.getItem('last_auto_backup');
-            if (lastBackupTime) {
-                var lastTime = parseInt(lastBackupTime);
-                var now = Date.now();
-                var daysSinceLastBackup = Math.floor((now - lastTime) / (1000 * 60 * 60 * 24));
-                
-                // 如果超过3天没有备份，显示提醒
-                if (daysSinceLastBackup >= 3) {
-                    var backupIndicator = document.getElementById('backupIndicator');
-                    if (backupIndicator) {
-                        backupIndicator.style.display = 'flex';
-                        backupIndicator.title = '建议备份数据，已经 ' + daysSinceLastBackup + ' 天没有备份了';
-                    }
-                }
-            }
-        }
-        
-        // 页面加载完成后启动
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM加载完成，开始启动');
-            setTimeout(safeStartApp, 100);
+            // 5秒后重置
+            setTimeout(() => {
+                tapCount = 0;
+            }, 5000);
         });
-        
-        // 检查备份提醒
-        setTimeout(checkBackupReminder, 3000);
-        
-        console.log('📱 手机端启动脚本加载完成');
     </script>
 </body>
 </html>

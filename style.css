@@ -86,7 +86,8 @@ body {
     .tab-item,
     .menu-item,
     .chat-item,
-    .moment-action-btn {
+    .moment-action-btn,
+    .backup-action-btn {
         min-height: 44px;
         min-width: 44px;
     }
@@ -431,6 +432,10 @@ button {
     animation: modalSlideIn 0.3s ease;
 }
 
+.modal[data-size="large"] .modal-content {
+    max-width: 600px;
+}
+
 @keyframes modalSlideIn {
     from {
         opacity: 0;
@@ -584,6 +589,204 @@ button {
 
 .toast.info {
     background: rgba(24, 144, 255, 0.9);
+}
+
+/* ========== 备份相关样式 ========== */
+
+/* 备份管理界面 */
+.backup-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--bg-light);
+    border-radius: var(--radius-medium);
+}
+
+.backup-section-title {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.backup-description {
+    font-size: var(--font-md);
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.backup-action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.backup-action-buttons .btn-primary {
+    flex: 1;
+    min-width: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* 备份列表 */
+.backup-list {
+    margin-top: 15px;
+}
+
+.no-backup {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-lighter);
+    font-size: var(--font-md);
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+}
+
+.backup-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-light);
+    transition: all var(--speed-normal);
+}
+
+.backup-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.backup-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.backup-item-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.backup-item-date {
+    font-size: var(--font-sm);
+    color: var(--text-lighter);
+}
+
+.backup-item-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.backup-item-size {
+    font-size: var(--font-md);
+    color: var(--text-light);
+    padding: 4px 10px;
+    background: #f0f0f0;
+    border-radius: 12px;
+}
+
+.backup-item-description {
+    font-size: var(--font-md);
+    color: var(--text-dark);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.backup-item-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.backup-action-btn {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: var(--radius-small);
+    font-size: var(--font-sm);
+    cursor: pointer;
+    transition: all var(--speed-normal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid transparent;
+}
+
+.backup-action-btn.restore-btn {
+    background: #1890ff;
+    color: white;
+}
+
+.backup-action-btn.delete-btn {
+    background: #f5222d;
+    color: white;
+}
+
+.backup-action-btn.download-btn {
+    background: #52c41a;
+    color: white;
+}
+
+.backup-action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* 备份信息 */
+.backup-info {
+    padding: 20px;
+    background: var(--bg-light);
+    border-radius: var(--radius-medium);
+}
+
+.backup-info-title {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.backup-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.backup-stat-item {
+    background: var(--bg-white);
+    padding: 12px;
+    border-radius: var(--radius-small);
+    box-shadow: var(--shadow-light);
+}
+
+.stat-label {
+    display: block;
+    font-size: var(--font-sm);
+    color: var(--text-light);
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--text-dark);
 }
 
 /* ========== 聊天页面样式 ========== */
@@ -1777,6 +1980,23 @@ button {
     .chat-list {
         padding: 10px;
     }
+    
+    .backup-section {
+        padding: 15px;
+    }
+    
+    .backup-action-buttons .btn-primary {
+        min-width: 120px;
+        font-size: var(--font-sm);
+    }
+    
+    .backup-item-actions {
+        flex-wrap: wrap;
+    }
+    
+    .backup-action-btn {
+        min-width: 70px;
+    }
 }
 
 /* 平板端优化 */
@@ -1827,12 +2047,16 @@ button {
     .moment-item,
     .profile-menu,
     .settings-group,
-    .modal-content {
+    .modal-content,
+    .backup-section,
+    .backup-info,
+    .backup-item {
         background: var(--bg-white);
     }
     
     .no-contacts,
-    .no-moments {
+    .no-moments,
+    .no-backup {
         background: var(--bg-white);
     }
     
@@ -1840,6 +2064,10 @@ button {
     .moment-time,
     .comment-time {
         color: var(--text-light);
+    }
+    
+    .backup-stat-item {
+        background: #2a2a2a;
     }
 }
 
