@@ -4,6 +4,9 @@
 // 最后更新: 2024年
 // 描述: 仿微信风格的AI联系人聊天应用
 
+// 防止错误
+try {
+
 // ========== 配置模块 ==========
 const Config = {
     // 颜色配置
@@ -2956,3 +2959,5 @@ if ('serviceWorker' in navigator && Config.debugMode) {
         console.log('❌ Service Worker 注册失败:', error);
     });
 }
+
+} catch(e) { console.log('App error:', e); }
