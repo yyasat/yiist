@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>加载检查</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>quq小手机 - 加载检查</h1>
+    
+    <div id="test1" class="test">1. 检查浏览器支持...</div>
+    <div id="test2" class="test">2. 检查文件加载...</div>
+    <div id="test3" class="test">3. 检查JavaScript...</div>
+    
+    <div style="margin-top: 30px;">
+        <button onclick="runTests()">重新测试</button>
+        <button onclick="window.location.href='index.html'">返回主页面</button>
+    </div>
+    
+    <script>
+        function runTests() {
+            // 测试1：浏览器支持
+            var test1 = document.getElementById('test1');
+            if (window.localStorage && window.JSON) {
+                test1.innerHTML = '✅ 浏览器支持正常';
+                test1.className = 'test success';
+            } else {
+                test1.innerHTML = '❌ 浏览器不支持localStorage或JSON';
+                test1.className = 'test error';
+            }
+            
+            // 测试2：文件加载
+            var test2 = document.getElementById('test2');
+            setTimeout(function() {
+                var script = document.createElement('script');
+                script.src = 'app.js';
+                script.onload = function() {
+                    test2.innerHTML = '✅ app.js 加载成功';
+                    test2.className = 'test success';
+                };
+                script.onerror = function() {
+                    test2.innerHTML = '❌ app.js 加载失败';
+                    test2.className = 'test error';
+                };
+                document.head.appendChild(script);
+            }, 100);
+            
+            // 测试3：JavaScript执行
+            var test3 = document.getElementById('test3');
+            try {
+                eval('let x = 1; const y = 2;');
+                test3.innerHTML = '✅ JavaScript执行正常';
+                test3.className = 'test success';
+            } catch (e) {
+                test3.innerHTML = '❌ JavaScript执行出错: ' + e.message;
+                test3.className = 'test error';
+            }
+        }
+        
+        // 自动运行测试
+        runTests();
+    </script>
+</body>
+</html>
