@@ -14,23 +14,67 @@ const Config = {
         '#fff8e1', '#e0f7fa', '#fce4ec', '#f3e5f5', '#e8eaf6'
     ],
     
-    // API模型配置
+    // 内置API模型配置
     apiModels: {
         'gpt-3.5': {
             name: 'GPT-3.5 Turbo',
-            description: '快速、经济、适用于大多数对话场景'
+            description: '快速、经济、适用于大多数对话场景',
+            type: 'builtin',
+            endpoint: 'https://api.openai.com/v1/chat/completions',
+            provider: 'openai'
         },
         'gpt-4': {
             name: 'GPT-4',
-            description: '更智能、理解更深层，适用于复杂对话'
+            description: '更智能、理解更深层，适用于复杂对话',
+            type: 'builtin',
+            endpoint: 'https://api.openai.com/v1/chat/completions',
+            provider: 'openai'
         },
         'claude': {
             name: 'Claude',
-            description: '擅长创意写作和逻辑推理'
+            description: '擅长创意写作和逻辑推理',
+            type: 'builtin',
+            endpoint: 'https://api.anthropic.com/v1/messages',
+            provider: 'anthropic'
         },
         'ernie': {
             name: '文心一言',
-            description: '中文理解优秀，本土化优化'
+            description: '中文理解优秀，本土化优化',
+            type: 'builtin',
+            endpoint: 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/completions',
+            provider: 'baidu'
+        }
+    },
+    
+    // 支持的API提供商
+    apiProviders: {
+        'openai': {
+            name: 'OpenAI',
+            endpoint: 'https://api.openai.com/v1/chat/completions',
+            modelsEndpoint: 'https://api.openai.com/v1/models',
+            authType: 'bearer'
+        },
+        'anthropic': {
+            name: 'Anthropic Claude',
+            endpoint: 'https://api.anthropic.com/v1/messages',
+            modelsEndpoint: 'https://api.anthropic.com/v1/models',
+            authType: 'bearer'
+        },
+        'google': {
+            name: 'Google Gemini',
+            endpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+            modelsEndpoint: 'https://generativelanguage.googleapis.com/v1beta/models',
+            authType: 'api_key'
+        },
+        'azure': {
+            name: 'Azure OpenAI',
+            endpoint: 'https://{resource}.openai.azure.com/openai/deployments/{deployment}/chat/completions',
+            authType: 'api_key'
+        },
+        'custom': {
+            name: '自定义',
+            endpoint: '',
+            authType: 'bearer'
         }
     },
     
@@ -198,6 +242,58 @@ const Utils = {
     // 检查是否是对象
     isObject(item) {
         return item && typeof item === 'object' && !Array.isArray(item);
+    },
+    
+    // 获取API请求头
+    getApiHeaders(apiKey, provider = 'openai') {
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        
+        if (apiKey) {
+            if (provider === 'anthropic') {
+                headers['x-api-key'] = apiKey;
+                headers['anthropic-version'] = '2023-06-01';
+            } else if (provider === 'google') {
+                headers['x-goog-api-key'] = apiKey;
+            } else {
+                headers['Authorization'] = `Bearer ${apiKey}`;
+            }
+        }
+        
+        return headers;
+    },
+    
+    // 发送API请求
+    async sendApiRequest(url, options = {}) {
+        const defaultOptions = {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            timeout: 30000 // 30秒超时
+        };
+        
+        const finalOptions = { ...defaultOptions, ...options };
+        
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), finalOptions.timeout);
+            finalOptions.signal = controller.signal;
+            
+            const response = await fetch(url, finalOptions);
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return await response.json();
+        } catch (error) {
+            console.error('API请求失败:', error);
+            throw error;
+        }
     }
 };
 
@@ -212,7 +308,9 @@ const Storage = {
         comments: null,
         likes: null,
         pinnedContacts: null,
-        appliedApiModels: null
+        appliedApiModels: null,
+        customApiConfigs: null,
+        availableModels: null
     },
     
     // 获取数据（带缓存）
@@ -332,6 +430,26 @@ const Storage = {
         return this.set('applied_api_models', models);
     },
     
+    // 获取自定义API配置
+    getCustomApiConfigs() {
+        return this.get('custom_api_configs') || {};
+    },
+    
+    // 保存自定义API配置
+    saveCustomApiConfigs(configs) {
+        return this.set('custom_api_configs', configs);
+    },
+    
+    // 获取可用的模型列表
+    getAvailableModels() {
+        return this.get('available_models') || {};
+    },
+    
+    // 保存可用的模型列表
+    saveAvailableModels(models) {
+        return this.set('available_models', models);
+    },
+    
     // 获取设置
     getSetting(key, defaultValue) {
         const value = localStorage.getItem(key);
@@ -392,7 +510,9 @@ const Storage = {
             comments: null,
             likes: null,
             pinnedContacts: null,
-            appliedApiModels: null
+            appliedApiModels: null,
+            customApiConfigs: null,
+            availableModels: null
         };
     },
     
@@ -410,6 +530,739 @@ const Storage = {
             totalSize: `${(totalSize / 1024).toFixed(2)} KB`,
             quota: `${(5 * 1024 - totalSize / 1024).toFixed(2)} KB 剩余`
         };
+    }
+};
+
+// ========== API模块 ==========
+const ApiModule = {
+    // 状态
+    isInitialized: false,
+    currentApiConfig: null,
+    
+    // 初始化
+    init() {
+        if (this.isInitialized) return;
+        
+        console.log('🔌 初始化API模块...');
+        
+        // 加载自定义API配置
+        this.loadApiConfigs();
+        
+        this.isInitialized = true;
+        console.log('✅ API模块初始化完成');
+    },
+    
+    // 加载API配置
+    loadApiConfigs() {
+        const configs = Storage.getCustomApiConfigs();
+        this.currentApiConfig = configs;
+        return configs;
+    },
+    
+    // 保存API配置
+    saveApiConfig(config) {
+        const configs = Storage.getCustomApiConfigs();
+        const newConfigs = { ...configs, ...config };
+        Storage.saveCustomApiConfigs(newConfigs);
+        this.currentApiConfig = newConfigs;
+        return newConfigs;
+    },
+    
+    // 获取API配置
+    getApiConfig(provider = null) {
+        const configs = this.currentApiConfig || Storage.getCustomApiConfigs();
+        
+        if (!provider) {
+            // 返回所有配置
+            return configs;
+        }
+        
+        // 返回特定提供商的配置
+        return configs[provider] || null;
+    },
+    
+    // 测试API连接
+    async testApiConnection(config) {
+        const { provider, apiKey, endpoint } = config;
+        
+        if (!apiKey) {
+            throw new Error('API密钥不能为空');
+        }
+        
+        try {
+            let testUrl, headers, body;
+            
+            // 根据提供商设置测试参数
+            switch (provider) {
+                case 'openai':
+                    testUrl = endpoint || 'https://api.openai.com/v1/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'anthropic':
+                    testUrl = endpoint || 'https://api.anthropic.com/v1/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'google':
+                    testUrl = endpoint || 'https://generativelanguage.googleapis.com/v1beta/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'custom':
+                    testUrl = endpoint;
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    break;
+                    
+                default:
+                    throw new Error('不支持的API提供商');
+            }
+            
+            if (!testUrl) {
+                throw new Error('API地址不能为空');
+            }
+            
+            // 发送测试请求
+            const response = await Utils.sendApiRequest(testUrl, {
+                method: 'GET',
+                headers: headers
+            });
+            
+            return {
+                success: true,
+                data: response,
+                message: 'API连接测试成功'
+            };
+            
+        } catch (error) {
+            console.error('API连接测试失败:', error);
+            return {
+                success: false,
+                error: error.message,
+                message: `API连接测试失败: ${error.message}`
+            };
+        }
+    },
+    
+    // 获取可用模型列表
+    async fetchAvailableModels(config) {
+        const { provider, apiKey, endpoint } = config;
+        
+        if (!apiKey) {
+            throw new Error('API密钥不能为空');
+        }
+        
+        try {
+            let modelsUrl, headers;
+            let models = [];
+            
+            // 根据提供商设置请求参数
+            switch (provider) {
+                case 'openai':
+                    modelsUrl = endpoint ? `${endpoint.replace(/\/chat\/completions$/, '')}/models` : 'https://api.openai.com/v1/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'anthropic':
+                    modelsUrl = endpoint || 'https://api.anthropic.com/v1/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'google':
+                    modelsUrl = endpoint || 'https://generativelanguage.googleapis.com/v1beta/models';
+                    headers = Utils.getApiHeaders(apiKey, provider);
+                    break;
+                    
+                case 'custom':
+                    modelsUrl = endpoint;
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    };
+                    break;
+                    
+                default:
+                    throw new Error('不支持的API提供商');
+            }
+            
+            if (!modelsUrl) {
+                throw new Error('API地址不能为空');
+            }
+            
+            // 发送获取模型请求
+            const response = await Utils.sendApiRequest(modelsUrl, {
+                method: 'GET',
+                headers: headers
+            });
+            
+            // 解析响应数据，提取模型列表
+            if (provider === 'openai') {
+                // OpenAI格式
+                models = response.data
+                    .filter(model => model.id.includes('gpt') || model.id.includes('text'))
+                    .map(model => ({
+                        id: model.id,
+                        name: model.id,
+                        description: `OpenAI模型 (创建时间: ${new Date(model.created * 1000).toLocaleDateString()})`,
+                        provider: 'openai'
+                    }));
+            } else if (provider === 'anthropic') {
+                // Anthropic格式
+                models = response.data.map(model => ({
+                    id: model.id,
+                    name: model.id,
+                    description: 'Anthropic Claude模型',
+                    provider: 'anthropic'
+                }));
+            } else if (provider === 'google') {
+                // Google格式
+                models = response.models
+                    .filter(model => model.name.includes('models/gemini'))
+                    .map(model => ({
+                        id: model.name.replace('models/', ''),
+                        name: model.name.replace('models/', ''),
+                        description: 'Google Gemini模型',
+                        provider: 'google'
+                    }));
+            } else if (provider === 'custom') {
+                // 自定义API，尝试解析响应
+                if (Array.isArray(response)) {
+                    models = response.map(item => ({
+                        id: item.id || item.name || item.model,
+                        name: item.name || item.id || item.model,
+                        description: item.description || '自定义API模型',
+                        provider: 'custom'
+                    }));
+                } else if (response.data && Array.isArray(response.data)) {
+                    models = response.data.map(item => ({
+                        id: item.id || item.name || item.model,
+                        name: item.name || item.id || item.model,
+                        description: item.description || '自定义API模型',
+                        provider: 'custom'
+                    }));
+                } else {
+                    // 如果无法解析，使用默认模型
+                    models = [{
+                        id: 'custom-model',
+                        name: '自定义模型',
+                        description: '自定义API模型',
+                        provider: 'custom'
+                    }];
+                }
+            }
+            
+            // 保存模型列表
+            const availableModels = Storage.getAvailableModels();
+            availableModels[provider] = models;
+            Storage.saveAvailableModels(availableModels);
+            
+            return {
+                success: true,
+                models: models,
+                count: models.length,
+                message: `成功获取 ${models.length} 个模型`
+            };
+            
+        } catch (error) {
+            console.error('获取模型列表失败:', error);
+            return {
+                success: false,
+                error: error.message,
+                message: `获取模型列表失败: ${error.message}`
+            };
+        }
+    },
+    
+    // 发送聊天请求
+    async sendChatMessage(config, messages, modelId = null) {
+        const { provider, apiKey, endpoint } = config;
+        
+        if (!apiKey) {
+            throw new Error('API密钥不能为空');
+        }
+        
+        if (!endpoint) {
+            throw new Error('API地址不能为空');
+        }
+        
+        try {
+            let requestUrl = endpoint;
+            let headers = Utils.getApiHeaders(apiKey, provider);
+            let body = {};
+            
+            // 根据提供商设置请求体
+            switch (provider) {
+                case 'openai':
+                    body = {
+                        model: modelId || 'gpt-3.5-turbo',
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    };
+                    break;
+                    
+                case 'anthropic':
+                    // 转换消息格式为Anthropic格式
+                    const systemMessage = messages.find(m => m.role === 'system');
+                    const conversationMessages = messages.filter(m => m.role !== 'system');
+                    
+                    body = {
+                        model: modelId || 'claude-3-haiku-20240307',
+                        messages: conversationMessages.map(msg => ({
+                            role: msg.role === 'assistant' ? 'assistant' : 'user',
+                            content: msg.content
+                        })),
+                        max_tokens: 1000,
+                        temperature: 0.7
+                    };
+                    
+                    if (systemMessage) {
+                        body.system = systemMessage.content;
+                    }
+                    break;
+                    
+                case 'google':
+                    // 转换消息格式为Google格式
+                    const googleMessages = messages.map(msg => ({
+                        role: msg.role === 'assistant' ? 'model' : 'user',
+                        parts: [{ text: msg.content }]
+                    }));
+                    
+                    requestUrl = `${endpoint}/${modelId || 'gemini-pro'}:generateContent`;
+                    body = {
+                        contents: googleMessages,
+                        generationConfig: {
+                            temperature: 0.7,
+                            maxOutputTokens: 1000
+                        }
+                    };
+                    break;
+                    
+                case 'custom':
+                default:
+                    // 自定义API，使用通用格式
+                    body = {
+                        model: modelId || 'default',
+                        messages: messages,
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    };
+                    break;
+            }
+            
+            // 发送请求
+            const response = await Utils.sendApiRequest(requestUrl, {
+                method: 'POST',
+                headers: headers,
+                body: JSON.stringify(body)
+            });
+            
+            // 解析响应
+            let content = '';
+            
+            if (provider === 'openai') {
+                content = response.choices?.[0]?.message?.content || '';
+            } else if (provider === 'anthropic') {
+                content = response.content?.[0]?.text || '';
+            } else if (provider === 'google') {
+                content = response.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            } else {
+                // 自定义API，尝试多种可能的响应格式
+                content = response.choices?.[0]?.message?.content || 
+                         response.content || 
+                         response.text || 
+                         response.result || 
+                         JSON.stringify(response);
+            }
+            
+            if (!content) {
+                throw new Error('API返回空响应');
+            }
+            
+            return {
+                success: true,
+                content: content,
+                rawResponse: response
+            };
+            
+        } catch (error) {
+            console.error('API聊天请求失败:', error);
+            throw error;
+        }
+    },
+    
+    // 获取所有模型（内置+自定义）
+    getAllModels() {
+        const allModels = { ...Config.apiModels };
+        const customConfigs = this.getApiConfig();
+        const availableModels = Storage.getAvailableModels();
+        
+        // 添加自定义模型
+        Object.entries(customConfigs).forEach(([provider, config]) => {
+            if (config.enabled && availableModels[provider]) {
+                availableModels[provider].forEach(model => {
+                    const modelKey = `${provider}:${model.id}`;
+                    allModels[modelKey] = {
+                        name: `${model.name} (${Config.apiProviders[provider]?.name || provider})`,
+                        description: model.description || `自定义${provider}模型`,
+                        type: 'custom',
+                        provider: provider,
+                        modelId: model.id
+                    };
+                });
+            }
+        });
+        
+        return allModels;
+    },
+    
+    // 获取当前激活的模型
+    getActiveModels() {
+        const allModels = this.getAllModels();
+        const activeModels = {};
+        
+        Object.entries(allModels).forEach(([key, model]) => {
+            if (model.type === 'builtin' || 
+                (model.type === 'custom' && this.getApiConfig(model.provider)?.enabled)) {
+                activeModels[key] = model;
+            }
+        });
+        
+        return activeModels;
+    },
+    
+    // 打开API配置界面
+    openApiConfig() {
+        const customConfigs = this.getApiConfig();
+        const availableModels = Storage.getAvailableModels();
+        
+        const modal = UI.createModal({
+            id: 'apiConfigModal',
+            title: '自定义API配置',
+            content: `
+                <div class="api-config-section">
+                    <div class="api-config-section-title">⚙️ API提供商配置</div>
+                    <div class="api-config-description">
+                        配置您的API密钥和地址，以便使用自定义AI模型
+                    </div>
+                    
+                    <div class="api-providers-list" id="apiProvidersList">
+                        ${Object.entries(Config.apiProviders).map(([key, provider]) => {
+                            const config = customConfigs[key] || {};
+                            const hasModels = availableModels[key] && availableModels[key].length > 0;
+                            
+                            return `
+                                <div class="api-provider-item ${config.enabled ? 'enabled' : ''}" data-provider="${key}">
+                                    <div class="api-provider-header">
+                                        <div class="api-provider-info">
+                                            <div class="api-provider-name">${provider.name}</div>
+                                            <div class="api-provider-status">
+                                                ${config.enabled ? 
+                                                    `<span class="status-enabled">✓ 已启用</span>` : 
+                                                    `<span class="status-disabled">✗ 未启用</span>`
+                                                }
+                                                ${hasModels ? `<span class="models-count">${availableModels[key].length} 个模型</span>` : ''}
+                                            </div>
+                                        </div>
+                                        <div class="api-provider-toggle">
+                                            <label class="switch">
+                                                <input type="checkbox" class="provider-toggle" data-provider="${key}" ${config.enabled ? 'checked' : ''}>
+                                                <span class="slider"></span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    ${config.enabled ? `
+                                        <div class="api-provider-config">
+                                            <div class="form-group">
+                                                <label class="form-label" for="apiKey_${key}">API密钥</label>
+                                                <input type="password" class="form-input" id="apiKey_${key}" 
+                                                       placeholder="请输入您的API密钥" value="${config.apiKey || ''}">
+                                            </div>
+                                            <div class="form-group">
+                                                <label class="form-label" for="endpoint_${key}">API地址</label>
+                                                <input type="text" class="form-input" id="endpoint_${key}" 
+                                                       placeholder="${provider.endpoint || '请输入API地址'}" value="${config.endpoint || ''}">
+                                                <div class="form-hint">留空使用默认地址</div>
+                                            </div>
+                                            <div class="api-provider-actions">
+                                                <button class="btn-primary test-api-btn" data-provider="${key}">
+                                                    <i class="fas fa-plug"></i> 测试连接
+                                                </button>
+                                                <button class="btn-primary fetch-models-btn" data-provider="${key}">
+                                                    <i class="fas fa-download"></i> 获取模型
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+                
+                <div class="api-config-section">
+                    <div class="api-config-section-title">📊 当前可用模型</div>
+                    <div class="available-models-list" id="availableModelsList">
+                        ${(() => {
+                            const activeModels = this.getActiveModels();
+                            const modelKeys = Object.keys(activeModels);
+                            
+                            if (modelKeys.length === 0) {
+                                return '<div class="no-models">暂无可用模型，请先配置API</div>';
+                            }
+                            
+                            return modelKeys.map(key => {
+                                const model = activeModels[key];
+                                return `
+                                    <div class="available-model-item" data-model="${key}">
+                                        <div class="model-icon">
+                                            <i class="fas fa-robot"></i>
+                                        </div>
+                                        <div class="model-info">
+                                            <div class="model-name">${model.name}</div>
+                                            <div class="model-description">${model.description}</div>
+                                            <div class="model-provider">
+                                                <span class="provider-tag ${model.provider}">${model.type === 'builtin' ? '内置' : '自定义'}</span>
+                                                <span class="provider-name">${Config.apiProviders[model.provider]?.name || model.provider}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('');
+                        })()}
+                    </div>
+                </div>
+            `,
+            buttons: [
+                {
+                    text: '关闭',
+                    action: 'close',
+                    class: 'btn-primary'
+                }
+            ],
+            size: 'large'
+        });
+        
+        UI.showModal('apiConfigModal');
+        
+        // 设置事件监听
+        this.setupApiConfigEvents(modal);
+    },
+    
+    // 设置API配置事件
+    setupApiConfigEvents(modal) {
+        // 提供商开关切换
+        modal.querySelectorAll('.provider-toggle').forEach(toggle => {
+            toggle.addEventListener('change', (e) => {
+                const provider = e.target.dataset.provider;
+                const enabled = e.target.checked;
+                
+                this.toggleApiProvider(provider, enabled, modal);
+            });
+        });
+        
+        // 测试连接按钮
+        modal.querySelectorAll('.test-api-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const provider = e.target.dataset.provider;
+                await this.testApiProvider(provider, modal);
+            });
+        });
+        
+        // 获取模型按钮
+        modal.querySelectorAll('.fetch-models-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const provider = e.target.dataset.provider;
+                await this.fetchModelsForProvider(provider, modal);
+            });
+        });
+        
+        // API密钥输入框更改时自动保存
+        modal.querySelectorAll('.form-input').forEach(input => {
+            input.addEventListener('change', (e) => {
+                const id = e.target.id;
+                const [_, provider] = id.split('_');
+                this.saveApiProviderConfig(provider, modal);
+            });
+        });
+    },
+    
+    // 切换API提供商
+    toggleApiProvider(provider, enabled, modal) {
+        const configs = this.getApiConfig();
+        
+        if (enabled) {
+            // 启用提供商
+            if (!configs[provider]) {
+                configs[provider] = {
+                    enabled: true,
+                    apiKey: '',
+                    endpoint: Config.apiProviders[provider]?.endpoint || ''
+                };
+            } else {
+                configs[provider].enabled = true;
+            }
+        } else {
+            // 禁用提供商
+            if (configs[provider]) {
+                configs[provider].enabled = false;
+            }
+        }
+        
+        this.saveApiConfig(configs);
+        
+        // 重新加载模态框内容
+        setTimeout(() => {
+            UI.closeModal('apiConfigModal');
+            setTimeout(() => {
+                this.openApiConfig();
+            }, 300);
+        }, 300);
+    },
+    
+    // 测试API提供商连接
+    async testApiProvider(provider, modal) {
+        const apiKeyInput = modal.querySelector(`#apiKey_${provider}`);
+        const endpointInput = modal.querySelector(`#endpoint_${provider}`);
+        
+        if (!apiKeyInput) {
+            Utils.showToast('请先输入API密钥', 'error');
+            return;
+        }
+        
+        const apiKey = apiKeyInput.value.trim();
+        const endpoint = endpointInput.value.trim() || Config.apiProviders[provider]?.endpoint;
+        
+        if (!apiKey) {
+            Utils.showToast('API密钥不能为空', 'error');
+            return;
+        }
+        
+        if (!endpoint) {
+            Utils.showToast('API地址不能为空', 'error');
+            return;
+        }
+        
+        const config = {
+            provider: provider,
+            apiKey: apiKey,
+            endpoint: endpoint
+        };
+        
+        // 保存配置
+        this.saveApiProviderConfig(provider, modal);
+        
+        // 显示加载状态
+        const testBtn = modal.querySelector(`.test-api-btn[data-provider="${provider}"]`);
+        const originalText = testBtn.innerHTML;
+        testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 测试中...';
+        testBtn.disabled = true;
+        
+        try {
+            const result = await this.testApiConnection(config);
+            
+            if (result.success) {
+                Utils.showToast(result.message, 'success');
+            } else {
+                Utils.showToast(result.message, 'error');
+            }
+        } catch (error) {
+            Utils.showToast(`测试失败: ${error.message}`, 'error');
+        } finally {
+            // 恢复按钮状态
+            testBtn.innerHTML = originalText;
+            testBtn.disabled = false;
+        }
+    },
+    
+    // 获取提供商模型
+    async fetchModelsForProvider(provider, modal) {
+        const apiKeyInput = modal.querySelector(`#apiKey_${provider}`);
+        const endpointInput = modal.querySelector(`#endpoint_${provider}`);
+        
+        if (!apiKeyInput) {
+            Utils.showToast('请先输入API密钥', 'error');
+            return;
+        }
+        
+        const apiKey = apiKeyInput.value.trim();
+        const endpoint = endpointInput.value.trim() || Config.apiProviders[provider]?.endpoint;
+        
+        if (!apiKey) {
+            Utils.showToast('API密钥不能为空', 'error');
+            return;
+        }
+        
+        if (!endpoint) {
+            Utils.showToast('API地址不能为空', 'error');
+            return;
+        }
+        
+        const config = {
+            provider: provider,
+            apiKey: apiKey,
+            endpoint: endpoint
+        };
+        
+        // 保存配置
+        this.saveApiProviderConfig(provider, modal);
+        
+        // 显示加载状态
+        const fetchBtn = modal.querySelector(`.fetch-models-btn[data-provider="${provider}"]`);
+        const originalText = fetchBtn.innerHTML;
+        fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 获取中...';
+        fetchBtn.disabled = true;
+        
+        try {
+            const result = await this.fetchAvailableModels(config);
+            
+            if (result.success) {
+                Utils.showToast(result.message, 'success');
+                
+                // 重新加载模态框以显示新模型
+                setTimeout(() => {
+                    UI.closeModal('apiConfigModal');
+                    setTimeout(() => {
+                        this.openApiConfig();
+                    }, 300);
+                }, 1000);
+            } else {
+                Utils.showToast(result.message, 'error');
+            }
+        } catch (error) {
+            Utils.showToast(`获取失败: ${error.message}`, 'error');
+        } finally {
+            // 恢复按钮状态
+            fetchBtn.innerHTML = originalText;
+            fetchBtn.disabled = false;
+        }
+    },
+    
+    // 保存API提供商配置
+    saveApiProviderConfig(provider, modal) {
+        const apiKeyInput = modal.querySelector(`#apiKey_${provider}`);
+        const endpointInput = modal.querySelector(`#endpoint_${provider}`);
+        
+        if (!apiKeyInput) return;
+        
+        const configs = this.getApiConfig();
+        
+        if (!configs[provider]) {
+            configs[provider] = {
+                enabled: true,
+                apiKey: '',
+                endpoint: ''
+            };
+        }
+        
+        configs[provider].apiKey = apiKeyInput.value.trim();
+        configs[provider].endpoint = endpointInput.value.trim() || Config.apiProviders[provider]?.endpoint || '';
+        
+        this.saveApiConfig(configs);
     }
 };
 
@@ -1232,6 +2085,12 @@ const ChatModule = {
         const roleHistory = histories[role.id] || [];
         const lastMessage = roleHistory.length > 0 ? roleHistory[roleHistory.length - 1] : null;
         
+        // 获取联系人使用的模型
+        const appliedModels = Storage.getAppliedApiModels();
+        const modelKey = appliedModels[role.id] || Storage.getSetting('selected_api_model', 'gpt-3.5');
+        const allModels = ApiModule.getAllModels();
+        const model = allModels[modelKey];
+        
         // 创建容器
         const container = document.createElement('div');
         container.className = 'chat-item-container';
@@ -1254,6 +2113,13 @@ const ChatModule = {
                                     lastMessage.content) : 
                                 '开始聊天'}
                         </div>
+                        ${model ? `
+                            <div class="role-model-tag">
+                                <span class="model-tag ${model.type === 'builtin' ? 'builtin' : 'custom'}">
+                                    <i class="fas fa-robot"></i> ${model.name}
+                                </span>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -1527,23 +2393,53 @@ const ChatModule = {
         input.value = '';
         
         // 生成AI回复
-        setTimeout(() => {
-            this.generateAIResponse(message);
-        }, 500);
+        this.generateAIResponse(message);
     },
     
     // 生成AI回复
-    generateAIResponse(userMessage) {
+    async generateAIResponse(userMessage) {
         if (!this.currentRoleId) return;
         
         const role = Storage.getRoles().find(r => r.id === this.currentRoleId);
         if (!role) return;
         
-        // 获取使用的模型
+        // 获取联系人使用的模型
         const appliedModels = Storage.getAppliedApiModels();
-        const model = appliedModels[this.currentRoleId] || Storage.getSetting('selected_api_model', 'gpt-3.5');
+        const modelKey = appliedModels[this.currentRoleId] || Storage.getSetting('selected_api_model', 'gpt-3.5');
+        const allModels = ApiModule.getAllModels();
+        const model = allModels[modelKey];
         
-        // 生成回复
+        if (!model) {
+            this.addFallbackResponse(role, userMessage);
+            return;
+        }
+        
+        // 如果是自定义API模型，检查配置
+        if (model.type === 'custom') {
+            const apiConfig = ApiModule.getApiConfig(model.provider);
+            if (!apiConfig || !apiConfig.enabled || !apiConfig.apiKey) {
+                Utils.showToast('自定义API未配置或未启用', 'error');
+                this.addFallbackResponse(role, userMessage);
+                return;
+            }
+            
+            // 使用自定义API
+            try {
+                await this.generateCustomAIResponse(role, userMessage, model, apiConfig);
+                return;
+            } catch (error) {
+                console.error('自定义API请求失败:', error);
+                Utils.showToast('AI响应失败，使用模拟回复', 'error');
+            }
+        }
+        
+        // 使用内置模型或模拟回复
+        this.addFallbackResponse(role, userMessage);
+    },
+    
+    // 添加模拟回复
+    addFallbackResponse(role, userMessage) {
+        // 生成模拟回复
         let reply;
         
         if (!role.personality || role.personality.trim() === '') {
@@ -1557,8 +2453,7 @@ const ChatModule = {
             }
         } else {
             // 基于人物设定的回复
-            const modelName = Config.apiModels[model]?.name || 'AI';
-            reply = `（${modelName}）作为${role.name}，`;
+            reply = `作为${role.name}，`;
             
             // 添加性格特点
             const personality = role.personality.toLowerCase();
@@ -1596,6 +2491,73 @@ const ChatModule = {
         
         // 更新联系人列表的最后消息显示
         this.loadChatList();
+    },
+    
+    // 生成自定义AI回复
+    async generateCustomAIResponse(role, userMessage, model, apiConfig) {
+        // 获取聊天历史
+        const histories = Storage.getChatHistories();
+        const roleHistory = histories[this.currentRoleId] || [];
+        
+        // 构建消息数组
+        const messages = [];
+        
+        // 添加系统消息（基于角色设定）
+        if (role.personality && role.personality.trim()) {
+            messages.push({
+                role: 'system',
+                content: `你是一个AI助手，扮演角色：${role.name}。角色设定：${role.personality}。请根据这个设定来回应用户。`
+            });
+        } else {
+            messages.push({
+                role: 'system',
+                content: '你是一个有帮助的AI助手。'
+            });
+        }
+        
+        // 添加上下文消息（最近10条）
+        const recentMessages = roleHistory.slice(-10);
+        recentMessages.forEach(msg => {
+            messages.push({
+                role: msg.role === 'user' ? 'user' : 'assistant',
+                content: msg.content
+            });
+        });
+        
+        // 添加当前用户消息
+        messages.push({
+            role: 'user',
+            content: userMessage
+        });
+        
+        // 发送API请求
+        const config = {
+            provider: model.provider,
+            apiKey: apiConfig.apiKey,
+            endpoint: apiConfig.endpoint
+        };
+        
+        const response = await ApiModule.sendChatMessage(config, messages, model.modelId);
+        
+        if (response.success) {
+            // 添加回复
+            const replyId = this.addMessage(response.content, false);
+            
+            // 保存回复
+            histories[this.currentRoleId].push({
+                id: replyId,
+                role: 'assistant',
+                content: response.content,
+                time: Date.now()
+            });
+            
+            Storage.saveChatHistories(histories);
+            
+            // 更新联系人列表的最后消息显示
+            this.loadChatList();
+        } else {
+            throw new Error(response.error || 'API请求失败');
+        }
     },
     
     // 滚动到底部
@@ -1754,6 +2716,11 @@ const ChatModule = {
                     action: 'edit'
                 },
                 {
+                    text: '切换模型',
+                    icon: 'fas fa-robot',
+                    action: 'switchModel'
+                },
+                {
                     text: '聊天设置',
                     icon: 'fas fa-cog',
                     action: 'settings'
@@ -1779,6 +2746,11 @@ const ChatModule = {
             ProfileModule.openRoleEditor(this.currentRoleId);
         });
         
+        float.querySelector('[data-action="switchModel"]').addEventListener('click', () => {
+            UI.hideFloat(float.id);
+            this.showModelSelector();
+        });
+        
         float.querySelector('[data-action="delete"]').addEventListener('click', () => {
             UI.hideFloat(float.id);
             const role = Storage.getRoles().find(r => r.id === this.currentRoleId);
@@ -1797,6 +2769,143 @@ const ChatModule = {
             };
             document.addEventListener('click', closeHandler);
         }, 10);
+    },
+    
+    // 显示模型选择器
+    showModelSelector() {
+        if (!this.currentRoleId) {
+            Utils.showToast('请先选择一个联系人', 'error');
+            return;
+        }
+        
+        const role = Storage.getRoles().find(r => r.id === this.currentRoleId);
+        if (!role) return;
+        
+        // 获取当前选择的模型
+        const appliedModels = Storage.getAppliedApiModels();
+        const currentModelKey = appliedModels[this.currentRoleId] || Storage.getSetting('selected_api_model', 'gpt-3.5');
+        
+        // 获取所有可用模型
+        const allModels = ApiModule.getActiveModels();
+        const modelKeys = Object.keys(allModels);
+        
+        if (modelKeys.length === 0) {
+            Utils.showToast('没有可用模型，请先配置API', 'error');
+            return;
+        }
+        
+        const modal = UI.createModal({
+            id: 'modelSelectorModal',
+            title: '选择AI模型',
+            content: `
+                <div class="model-selector-section">
+                    <div class="model-selector-description">
+                        为联系人 <strong>${role.note || role.name}</strong> 选择AI模型
+                    </div>
+                    
+                    <div class="model-selector-list" id="modelSelectorList">
+                        ${modelKeys.map(key => {
+                            const model = allModels[key];
+                            const isCurrent = key === currentModelKey;
+                            return `
+                                <div class="model-selector-item ${isCurrent ? 'selected' : ''}" data-model="${key}">
+                                    <div class="model-selector-checkbox">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                    <div class="model-selector-icon">
+                                        <i class="fas fa-robot"></i>
+                                    </div>
+                                    <div class="model-selector-info">
+                                        <div class="model-selector-name">
+                                            ${model.name}
+                                            ${isCurrent ? '<span class="current-model-badge">当前</span>' : ''}
+                                        </div>
+                                        <div class="model-selector-description">${model.description}</div>
+                                        <div class="model-selector-provider">
+                                            <span class="provider-tag ${model.type === 'builtin' ? 'builtin' : 'custom'}">
+                                                ${model.type === 'builtin' ? '内置' : '自定义'}
+                                            </span>
+                                            <span class="provider-name">${Config.apiProviders[model.provider]?.name || model.provider}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    
+                    <div class="model-selector-hint">
+                        <i class="fas fa-info-circle"></i>
+                        切换模型不会影响现有聊天记录，但会影响未来的回复
+                    </div>
+                </div>
+            `,
+            buttons: [
+                {
+                    text: '取消',
+                    action: 'close',
+                    class: 'btn-primary'
+                },
+                {
+                    text: '应用',
+                    action: 'apply',
+                    class: 'btn-primary'
+                }
+            ]
+        });
+        
+        UI.showModal('modelSelectorModal');
+        
+        // 设置事件监听
+        this.setupModelSelectorEvents(modal, role.id);
+    },
+    
+    // 设置模型选择器事件
+    setupModelSelectorEvents(modal, roleId) {
+        // 模型项点击
+        modal.querySelectorAll('.model-selector-item').forEach(item => {
+            item.addEventListener('click', () => {
+                // 移除所有选中状态
+                modal.querySelectorAll('.model-selector-item').forEach(i => {
+                    i.classList.remove('selected');
+                });
+                
+                // 添加当前选中状态
+                item.classList.add('selected');
+            });
+        });
+        
+        // 应用按钮
+        const applyBtn = modal.querySelector('[data-action="apply"]');
+        if (applyBtn) {
+            applyBtn.addEventListener('click', () => {
+                const selectedItem = modal.querySelector('.model-selector-item.selected');
+                if (selectedItem) {
+                    const modelKey = selectedItem.dataset.model;
+                    this.applyModelToContact(roleId, modelKey);
+                    UI.closeModal('modelSelectorModal');
+                } else {
+                    Utils.showToast('请先选择一个模型', 'error');
+                }
+            });
+        }
+    },
+    
+    // 应用模型到联系人
+    applyModelToContact(roleId, modelKey) {
+        const appliedModels = Storage.getAppliedApiModels();
+        appliedModels[roleId] = modelKey;
+        Storage.saveAppliedApiModels(appliedModels);
+        
+        // 获取模型信息
+        const allModels = ApiModule.getAllModels();
+        const model = allModels[modelKey];
+        
+        if (model) {
+            Utils.showToast(`已将 ${model.name} 模型应用到联系人`, 'success');
+            
+            // 更新聊天列表显示
+            this.loadChatList();
+        }
     },
     
     // 设置事件监听器
@@ -2545,6 +3654,15 @@ const ProfileModule = {
         const roles = Storage.getRoles();
         const role = roleId ? roles.find(r => r.id === roleId) : null;
         
+        // 获取可用模型
+        const allModels = ApiModule.getActiveModels();
+        const modelKeys = Object.keys(allModels);
+        const defaultModel = Storage.getSetting('selected_api_model', 'gpt-3.5');
+        
+        // 获取当前模型
+        const appliedModels = Storage.getAppliedApiModels();
+        const currentModel = roleId ? appliedModels[roleId] || defaultModel : defaultModel;
+        
         const modal = UI.createModal({
             id: 'roleEditorModal',
             title: roleId ? '编辑联系人' : '添加联系人',
@@ -2573,6 +3691,17 @@ const ProfileModule = {
                     <label class="form-label" for="rolePersonality">人物设定</label>
                     <textarea class="form-textarea" id="rolePersonality" placeholder="描述联系人的性格、背景、身份等设定。如果不填写，联系人将作为空白机器人，只听指令" rows="4">${role ? (role.personality || '') : ''}</textarea>
                     <div style="font-size: 12px; color: #999; margin-top: 4px;">可选填写。如果不填写，联系人将作为空白机器人，只听指令</div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="roleModel">AI模型</label>
+                    <select class="form-input" id="roleModel">
+                        ${modelKeys.map(key => {
+                            const model = allModels[key];
+                            const selected = key === currentModel ? 'selected' : '';
+                            return `<option value="${key}" ${selected}>${model.name} (${model.type === 'builtin' ? '内置' : '自定义'})</option>`;
+                        }).join('')}
+                    </select>
+                    <div style="font-size: 12px; color: #999; margin-top: 4px;">选择联系人使用的AI模型</div>
                 </div>
             `,
             buttons: [
@@ -2624,12 +3753,14 @@ const ProfileModule = {
         const nameInput = modal.querySelector('#roleName');
         const noteInput = modal.querySelector('#roleNote');
         const personalityInput = modal.querySelector('#rolePersonality');
+        const modelInput = modal.querySelector('#roleModel');
         
-        if (!nameInput || !noteInput || !personalityInput) return;
+        if (!nameInput || !noteInput || !personalityInput || !modelInput) return;
         
         const name = nameInput.value.trim();
         const note = noteInput.value.trim();
         const personality = personalityInput.value.trim();
+        const modelKey = modelInput.value;
         
         if (!name) {
             Utils.showToast('请输入联系人名称', 'error');
@@ -2655,6 +3786,11 @@ const ProfileModule = {
                     updatedAt: Date.now()
                 };
             }
+            
+            // 更新模型
+            const appliedModels = Storage.getAppliedApiModels();
+            appliedModels[roleId] = modelKey;
+            Storage.saveAppliedApiModels(appliedModels);
         } else {
             // 创建新联系人
             const newRole = {
@@ -2669,10 +3805,9 @@ const ProfileModule = {
             
             roles.push(newRole);
             
-            // 应用当前选中的API模型
+            // 应用选择的模型
             const appliedModels = Storage.getAppliedApiModels();
-            const selectedModel = Storage.getSetting('selected_api_model', 'gpt-3.5');
-            appliedModels[newRole.id] = selectedModel;
+            appliedModels[newRole.id] = modelKey;
             Storage.saveAppliedApiModels(appliedModels);
         }
         
@@ -2688,30 +3823,52 @@ const ProfileModule = {
     // 打开设置
     openSettings() {
         const selectedModel = Storage.getSetting('selected_api_model', 'gpt-3.5');
-        const currentModel = Config.apiModels[selectedModel] || Config.apiModels['gpt-3.5'];
+        const allModels = ApiModule.getActiveModels();
+        const currentModel = allModels[selectedModel] || Config.apiModels['gpt-3.5'];
         
         const modal = UI.createModal({
             id: 'settingsModal',
             title: '设置',
             content: `
                 <div class="settings-group">
-                    <div class="settings-title">API模型设置</div>
+                    <div class="settings-title">⚙️ API配置</div>
+                    <div class="settings-description">
+                        配置和管理自定义API模型
+                    </div>
+                    <div class="settings-action">
+                        <button class="btn-primary" id="openApiConfigBtn" style="width: 100%;">
+                            <i class="fas fa-cog"></i> 管理API配置
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-group">
+                    <div class="settings-title">🤖 默认AI模型设置</div>
                     <div style="margin-bottom: 15px; font-size: 14px; color: var(--text-light);">
-                        选择联系人使用的API模型，新建联系人将自动使用选中的模型
+                        选择联系人使用的默认AI模型，新建联系人将自动使用选中的模型
                     </div>
                     
                     <div class="api-model-select" id="apiModelSelect">
-                        ${Object.entries(Config.apiModels).map(([key, model]) => `
-                            <div class="api-model-item ${key === selectedModel ? 'selected' : ''}" data-model="${key}">
-                                <div class="api-model-name">${model.name}</div>
-                                <div class="api-model-desc">${model.description}</div>
-                            </div>
-                        `).join('')}
+                        ${Object.keys(allModels).map(key => {
+                            const model = allModels[key];
+                            const isSelected = key === selectedModel;
+                            return `
+                                <div class="api-model-item ${isSelected ? 'selected' : ''}" data-model="${key}">
+                                    <div class="api-model-name">${model.name}</div>
+                                    <div class="api-model-description">${model.description}</div>
+                                    <div class="api-model-provider">
+                                        <span class="provider-tag ${model.type === 'builtin' ? 'builtin' : 'custom'}">
+                                            ${model.type === 'builtin' ? '内置' : '自定义'}
+                                        </span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
                     </div>
                     
                     <div style="margin-top: 20px;">
                         <div class="settings-item">
-                            <div class="settings-label">当前选择模型</div>
+                            <div class="settings-label">当前默认模型</div>
                             <div class="settings-value" id="currentModelDisplay">${currentModel.name}</div>
                         </div>
                     </div>
@@ -2723,7 +3880,7 @@ const ProfileModule = {
                 </div>
                 
                 <div class="settings-group">
-                    <div class="settings-title">显示设置</div>
+                    <div class="settings-title">🎨 显示设置</div>
                     <div class="settings-item">
                         <div class="settings-label">暗色模式</div>
                         <select class="settings-select" id="darkModeSelect">
@@ -2759,7 +3916,18 @@ const ProfileModule = {
     
     // 设置设置事件
     setupSettingsEvents(modal) {
-        // API模型选择
+        // 打开API配置按钮
+        const openApiConfigBtn = modal.querySelector('#openApiConfigBtn');
+        if (openApiConfigBtn) {
+            openApiConfigBtn.addEventListener('click', () => {
+                UI.closeModal('settingsModal');
+                setTimeout(() => {
+                    ApiModule.openApiConfig();
+                }, 300);
+            });
+        }
+        
+        // AI模型选择
         modal.querySelectorAll('.api-model-item').forEach(item => {
             item.addEventListener('click', () => {
                 // 移除所有选中状态
@@ -2776,11 +3944,13 @@ const ProfileModule = {
                 
                 // 更新显示
                 const display = modal.querySelector('#currentModelDisplay');
-                if (display) {
-                    display.textContent = Config.apiModels[model]?.name || model;
+                const allModels = ApiModule.getActiveModels();
+                const modelInfo = allModels[model];
+                if (display && modelInfo) {
+                    display.textContent = modelInfo.name;
                 }
                 
-                Utils.showToast(`已选择 ${Config.apiModels[model]?.name || model} 模型`);
+                Utils.showToast(`已设置 ${modelInfo?.name || model} 为默认模型`);
             });
         });
         
@@ -2789,9 +3959,10 @@ const ProfileModule = {
         if (applyToAllBtn) {
             applyToAllBtn.addEventListener('click', () => {
                 const selectedModel = Storage.getSetting('selected_api_model', 'gpt-3.5');
-                const modelName = Config.apiModels[selectedModel]?.name || selectedModel;
+                const allModels = ApiModule.getActiveModels();
+                const modelInfo = allModels[selectedModel];
                 
-                if (confirm(`确定要将 ${modelName} 模型应用到所有联系人吗？`)) {
+                if (modelInfo && confirm(`确定要将 ${modelInfo.name} 模型应用到所有联系人吗？`)) {
                     const roles = Storage.getRoles();
                     const appliedModels = {};
                     
@@ -2800,7 +3971,8 @@ const ProfileModule = {
                     });
                     
                     Storage.saveAppliedApiModels(appliedModels);
-                    Utils.showToast(`已将 ${modelName} 模型应用到所有联系人`);
+                    ChatModule.loadChatList();
+                    Utils.showToast(`已将 ${modelInfo.name} 模型应用到所有联系人`);
                 }
             });
         }
@@ -2810,13 +3982,15 @@ const ProfileModule = {
         if (applyToSelectedBtn) {
             applyToSelectedBtn.addEventListener('click', () => {
                 const selectedModel = Storage.getSetting('selected_api_model', 'gpt-3.5');
-                const modelName = Config.apiModels[selectedModel]?.name || selectedModel;
+                const allModels = ApiModule.getActiveModels();
+                const modelInfo = allModels[selectedModel];
                 
                 if (ChatModule.currentRoleId) {
                     const appliedModels = Storage.getAppliedApiModels();
                     appliedModels[ChatModule.currentRoleId] = selectedModel;
                     Storage.saveAppliedApiModels(appliedModels);
-                    Utils.showToast(`已将 ${modelName} 模型应用到当前联系人`);
+                    ChatModule.loadChatList();
+                    Utils.showToast(`已将 ${modelInfo?.name || selectedModel} 模型应用到当前联系人`);
                 } else {
                     Utils.showToast('请先打开一个联系人聊天', 'error');
                 }
@@ -2857,6 +4031,14 @@ const ProfileModule = {
         if (settingsBtn) {
             settingsBtn.addEventListener('click', () => {
                 this.openSettings();
+            });
+        }
+        
+        // 备份按钮
+        const backupBtn = document.getElementById('backupBtn');
+        if (backupBtn) {
+            backupBtn.addEventListener('click', () => {
+                BackupModule.openBackupManager();
             });
         }
         
@@ -3029,6 +4211,12 @@ const ProfileModule = {
     
     // 创建联系人管理器项
     createRoleManagerItem(role, isPinned) {
+        // 获取模型信息
+        const appliedModels = Storage.getAppliedApiModels();
+        const modelKey = appliedModels[role.id] || Storage.getSetting('selected_api_model', 'gpt-3.5');
+        const allModels = ApiModule.getAllModels();
+        const model = allModels[modelKey];
+        
         return `
             <div class="role-item" data-role-id="${role.id}">
                 ${isPinned ? '<div class="pinned-badge"></div>' : ''}
@@ -3048,6 +4236,13 @@ const ProfileModule = {
                                     role.personality) : 
                                 '空白机器人，只听指令'}
                         </div>
+                        ${model ? `
+                            <div class="role-model-tag">
+                                <span class="model-tag ${model.type === 'builtin' ? 'builtin' : 'custom'}">
+                                    <i class="fas fa-robot"></i> ${model.name}
+                                </span>
+                            </div>
+                        ` : ''}
                     </div>
                 </div>
             </div>
@@ -3076,7 +4271,8 @@ const App = {
         ProfileModule.init();
         ChatModule.init();
         MomentsModule.init();
-        BackupModule.init(); // 初始化备份模块
+        BackupModule.init();
+        ApiModule.init(); // 初始化API模块
         
         // 3. 设置全局事件
         this.setupGlobalEvents();
@@ -3340,7 +4536,8 @@ const App = {
                 chat: ChatModule.isInitialized,
                 moments: MomentsModule.isInitialized,
                 profile: ProfileModule.isInitialized,
-                backup: BackupModule.isInitialized
+                backup: BackupModule.isInitialized,
+                api: ApiModule.isInitialized
             },
             storage: Storage.getStats(),
             device: Utils.getDeviceInfo()
@@ -3372,6 +4569,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.MomentsModule = MomentsModule;
         window.ProfileModule = ProfileModule;
         window.BackupModule = BackupModule;
+        window.ApiModule = ApiModule;
         window.Storage = Storage;
         window.Utils = Utils;
         window.UI = UI;
@@ -3380,6 +4578,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('🔧 调试模式已启用，模块已暴露到全局');
         console.log('💡 在控制台中使用 App.getStatus() 查看应用状态');
         console.log('💾 使用 BackupModule.openBackupManager() 打开备份管理');
+        console.log('🔌 使用 ApiModule.openApiConfig() 打开API配置');
     }
 });
 

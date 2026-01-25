@@ -87,7 +87,9 @@ body {
     .menu-item,
     .chat-item,
     .moment-action-btn,
-    .backup-action-btn {
+    .backup-action-btn,
+    .api-provider-item,
+    .available-model-item {
         min-height: 44px;
         min-width: 44px;
     }
@@ -402,6 +404,12 @@ button {
     min-height: 100px;
 }
 
+.form-hint {
+    font-size: var(--font-sm);
+    color: var(--text-lighter);
+    margin-top: 4px;
+}
+
 /* 弹窗 */
 .modal {
     position: fixed;
@@ -591,9 +599,530 @@ button {
     background: rgba(24, 144, 255, 0.9);
 }
 
-/* ========== 备份相关样式 ========== */
+/* ========== API配置相关样式 ========== */
 
-/* 备份管理界面 */
+/* API配置界面 */
+.api-config-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background: var(--bg-light);
+    border-radius: var(--radius-medium);
+}
+
+.api-config-section-title {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--text-dark);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.api-config-description {
+    font-size: var(--font-md);
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+/* API提供商列表 */
+.api-providers-list {
+    margin-top: 15px;
+}
+
+.api-provider-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-light);
+    transition: all var(--speed-normal);
+}
+
+.api-provider-item.enabled {
+    border-left: 4px solid var(--primary-color);
+}
+
+.api-provider-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.api-provider-info {
+    flex: 1;
+}
+
+.api-provider-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    font-size: var(--font-lg);
+}
+
+.api-provider-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: var(--font-sm);
+}
+
+.status-enabled {
+    color: #52c41a;
+    font-weight: 500;
+}
+
+.status-disabled {
+    color: var(--text-lighter);
+}
+
+.models-count {
+    color: #1890ff;
+    background: rgba(24, 144, 255, 0.1);
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: var(--font-xs);
+}
+
+/* 开关按钮 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* API提供商配置区域 */
+.api-provider-config {
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.api-provider-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.api-provider-actions .btn-primary {
+    flex: 1;
+    padding: 10px;
+    font-size: var(--font-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* 可用模型列表 */
+.available-models-list {
+    margin-top: 15px;
+}
+
+.no-models {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-lighter);
+    font-size: var(--font-md);
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+}
+
+.available-model-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: all var(--speed-normal);
+}
+
+.available-model-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.model-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-round);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--font-lg);
+}
+
+.model-info {
+    flex: 1;
+}
+
+.model-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    font-size: var(--font-lg);
+}
+
+.model-description {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.model-provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.provider-tag {
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+}
+
+.provider-tag.builtin {
+    background: #e6f7ff;
+    color: #1890ff;
+    border: 1px solid #91d5ff;
+}
+
+.provider-tag.custom {
+    background: #f6ffed;
+    color: #52c41a;
+    border: 1px solid #b7eb8f;
+}
+
+.provider-name {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+}
+
+/* 模型选择器 */
+.model-selector-section {
+    margin-bottom: 20px;
+}
+
+.model-selector-description {
+    font-size: var(--font-md);
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.model-selector-list {
+    max-height: 400px;
+    overflow-y: auto;
+    margin-bottom: 15px;
+}
+
+.model-selector-item {
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+    padding: 15px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-light);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    cursor: pointer;
+    transition: all var(--speed-normal);
+    border: 2px solid transparent;
+}
+
+.model-selector-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+.model-selector-item.selected {
+    border-color: var(--primary-color);
+    background: #f0fff5;
+}
+
+.model-selector-checkbox {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--speed-normal);
+}
+
+.model-selector-item.selected .model-selector-checkbox {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.model-selector-item.selected .model-selector-checkbox i {
+    color: white;
+    font-size: var(--font-xs);
+    display: block;
+}
+
+.model-selector-item:not(.selected) .model-selector-checkbox i {
+    display: none;
+}
+
+.model-selector-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-round);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: var(--font-lg);
+}
+
+.model-selector-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 4px;
+    font-size: var(--font-lg);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.current-model-badge {
+    background: #1890ff;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+}
+
+.model-selector-description {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.model-selector-provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.model-selector-hint {
+    padding: 12px;
+    background: #e6f7ff;
+    border-radius: var(--radius-small);
+    border-left: 4px solid #1890ff;
+    font-size: var(--font-sm);
+    color: #1890ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 角色模型标签 */
+.role-model-tag {
+    margin-top: 8px;
+}
+
+.model-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: var(--font-xs);
+    font-weight: 500;
+}
+
+.model-tag.builtin {
+    background: #e6f7ff;
+    color: #1890ff;
+    border: 1px solid #91d5ff;
+}
+
+.model-tag.custom {
+    background: #f6ffed;
+    color: #52c41a;
+    border: 1px solid #b7eb8f;
+}
+
+.model-tag i {
+    font-size: 10px;
+}
+
+/* ========== 设置相关样式 ========== */
+
+.settings-group {
+    margin-bottom: 25px;
+    background: var(--bg-white);
+    border-radius: var(--radius-medium);
+    padding: 20px;
+    box-shadow: var(--shadow-light);
+}
+
+.settings-title {
+    font-size: var(--font-xl);
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: var(--text-dark);
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-description {
+    font-size: var(--font-md);
+    color: var(--text-light);
+    margin-bottom: 15px;
+    line-height: 1.4;
+}
+
+.settings-action {
+    margin-top: 15px;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-item:last-child {
+    border-bottom: none;
+}
+
+.settings-label {
+    font-size: 15px;
+    color: var(--text-dark);
+}
+
+.settings-value {
+    font-size: var(--font-md);
+    color: var(--text-light);
+}
+
+.settings-select {
+    padding: 8px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--radius-small);
+    font-size: var(--font-md);
+    background: var(--bg-white);
+    cursor: pointer;
+}
+
+.settings-btn {
+    padding: 10px 20px;
+    background: var(--primary-color);
+    color: var(--text-white);
+    border: none;
+    border-radius: var(--radius-small);
+    font-size: var(--font-md);
+    cursor: pointer;
+    transition: all var(--speed-normal);
+}
+
+.settings-btn:hover {
+    background: var(--primary-dark);
+}
+
+/* API模型选择 */
+.api-model-select {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.api-model-item {
+    padding: 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-medium);
+    cursor: pointer;
+    transition: all var(--speed-normal);
+}
+
+.api-model-item:hover {
+    border-color: var(--primary-color);
+    background: #f0fff5;
+}
+
+.api-model-item.selected {
+    border-color: var(--primary-color);
+    background: #f0fff5;
+}
+
+.api-model-name {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: var(--text-dark);
+}
+
+.api-model-description {
+    font-size: var(--font-sm);
+    color: var(--text-light);
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.api-model-provider {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* ========== 备份相关样式 ========== */
+/* （备份相关样式保持不变，从之前的代码复制） */
 .backup-section {
     margin-bottom: 25px;
     padding: 20px;
@@ -790,7 +1319,7 @@ button {
 }
 
 /* ========== 聊天页面样式 ========== */
-
+/* （聊天相关样式保持不变，从之前的代码复制） */
 .chat-header {
     background: var(--bg-white);
     padding: 15px 20px;
@@ -1179,7 +1708,7 @@ button {
 }
 
 /* ========== 动态页面样式 ========== */
-
+/* （动态相关样式保持不变，从之前的代码复制） */
 .moments-header {
     height: 300px;
     position: relative;
@@ -1511,7 +2040,7 @@ button {
 }
 
 /* ========== 个人页面样式 ========== */
-
+/* （个人页面样式保持不变，从之前的代码复制） */
 .profile-header {
     background: var(--bg-white);
     padding: 30px 20px 25px;
@@ -1723,7 +2252,7 @@ button {
 }
 
 /* ========== 评论相关样式 ========== */
-
+/* （评论相关样式保持不变，从之前的代码复制） */
 .comments-list {
     max-height: 400px;
     overflow-y: auto;
@@ -1822,108 +2351,6 @@ button {
     background: var(--primary-dark);
 }
 
-/* ========== 设置相关样式 ========== */
-
-.settings-group {
-    margin-bottom: 25px;
-    background: var(--bg-white);
-    border-radius: var(--radius-medium);
-    padding: 20px;
-    box-shadow: var(--shadow-light);
-}
-
-.settings-title {
-    font-size: var(--font-xl);
-    font-weight: 600;
-    margin-bottom: 15px;
-    color: var(--text-dark);
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.settings-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.settings-item:last-child {
-    border-bottom: none;
-}
-
-.settings-label {
-    font-size: 15px;
-    color: var(--text-dark);
-}
-
-.settings-value {
-    font-size: var(--font-md);
-    color: var(--text-light);
-}
-
-.settings-select {
-    padding: 8px 12px;
-    border: 1px solid #e0e0e0;
-    border-radius: var(--radius-small);
-    font-size: var(--font-md);
-    background: var(--bg-white);
-    cursor: pointer;
-}
-
-.settings-btn {
-    padding: 10px 20px;
-    background: var(--primary-color);
-    color: var(--text-white);
-    border: none;
-    border-radius: var(--radius-small);
-    font-size: var(--font-md);
-    cursor: pointer;
-    transition: all var(--speed-normal);
-}
-
-.settings-btn:hover {
-    background: var(--primary-dark);
-}
-
-/* API模型选择 */
-.api-model-select {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-}
-
-.api-model-item {
-    padding: 15px;
-    border: 2px solid var(--border-color);
-    border-radius: var(--radius-medium);
-    cursor: pointer;
-    transition: all var(--speed-normal);
-}
-
-.api-model-item:hover {
-    border-color: var(--primary-color);
-    background: #f0fff5;
-}
-
-.api-model-item.selected {
-    border-color: var(--primary-color);
-    background: #f0fff5;
-}
-
-.api-model-name {
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--text-dark);
-}
-
-.api-model-desc {
-    font-size: var(--font-sm);
-    color: var(--text-light);
-}
-
 /* ========== 滚动条样式 ========== */
 
 ::-webkit-scrollbar {
@@ -1972,7 +2399,10 @@ button {
     
     .chat-item,
     .moment-item,
-    .profile-header {
+    .profile-header,
+    .api-config-section,
+    .settings-group,
+    .backup-section {
         padding: 15px;
     }
     
@@ -1981,8 +2411,20 @@ button {
         padding: 10px;
     }
     
-    .backup-section {
-        padding: 15px;
+    .api-provider-actions {
+        flex-direction: column;
+    }
+    
+    .api-provider-actions .btn-primary {
+        width: 100%;
+    }
+    
+    .api-model-select {
+        grid-template-columns: 1fr;
+    }
+    
+    .model-selector-item {
+        padding: 12px;
     }
     
     .backup-action-buttons .btn-primary {
@@ -2048,26 +2490,48 @@ button {
     .profile-menu,
     .settings-group,
     .modal-content,
+    .api-config-section,
     .backup-section,
     .backup-info,
-    .backup-item {
+    .backup-item,
+    .api-provider-item,
+    .available-model-item,
+    .model-selector-item {
         background: var(--bg-white);
     }
     
     .no-contacts,
     .no-moments,
-    .no-backup {
+    .no-backup,
+    .no-models {
         background: var(--bg-white);
     }
     
     .role-description,
     .moment-time,
-    .comment-time {
+    .comment-time,
+    .api-config-description,
+    .settings-description {
         color: var(--text-light);
     }
     
-    .backup-stat-item {
+    .backup-stat-item,
+    .model-selector-hint {
         background: #2a2a2a;
+    }
+    
+    .model-selector-hint {
+        background: rgba(24, 144, 255, 0.1);
+        border-left-color: #1890ff;
+        color: #91d5ff;
+    }
+    
+    .slider {
+        background-color: #555;
+    }
+    
+    input:checked + .slider {
+        background-color: var(--primary-color);
     }
 }
 
