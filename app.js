@@ -286,12 +286,21 @@ const Utils = {
             clearTimeout(timeoutId);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                const errorText = await response.text();
+                console.error('API响应错误:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: errorText
+                });
+                throw new Error(`HTTP ${response.status}: ${response.statusText} - ${errorText.substring(0, 100)}`);
             }
             
             return await response.json();
         } catch (error) {
             console.error('API请求失败:', error);
+            if (error.name === 'AbortError') {
+                throw new Error('请求超时，请检查网络连接或API地址');
+            }
             throw error;
         }
     }
@@ -590,17 +599,31 @@ const ApiModule = {
         }
         
         try {
-            let testUrl, headers, body;
+            let testUrl, headers;
             
             // 根据提供商设置测试参数
             switch (provider) {
                 case 'openai':
                     testUrl = endpoint || 'https://api.openai.com/v1/models';
+                    // 移除chat/completions部分，只保留基础URL
+                    if (testUrl.includes('/chat/completions')) {
+                        testUrl = testUrl.replace('/chat/completions', '/models');
+                    } else if (testUrl.includes('/v1/')) {
+                        // 如果已经是v1，但路径不对
+                        const urlObj = new URL(testUrl);
+                        if (!urlObj.pathname.includes('/models')) {
+                            urlObj.pathname = '/v1/models';
+                            testUrl = urlObj.toString();
+                        }
+                    }
                     headers = Utils.getApiHeaders(apiKey, provider);
                     break;
                     
                 case 'anthropic':
                     testUrl = endpoint || 'https://api.anthropic.com/v1/models';
+                    if (testUrl.includes('/messages')) {
+                        testUrl = testUrl.replace('/messages', '/models');
+                    }
                     headers = Utils.getApiHeaders(apiKey, provider);
                     break;
                     
@@ -625,11 +648,19 @@ const ApiModule = {
                 throw new Error('API地址不能为空');
             }
             
+            console.log('🔄 测试API连接:', {
+                provider,
+                url: testUrl,
+                hasApiKey: !!apiKey
+            });
+            
             // 发送测试请求
             const response = await Utils.sendApiRequest(testUrl, {
                 method: 'GET',
                 headers: headers
             });
+            
+            console.log('✅ API连接测试成功:', response);
             
             return {
                 success: true,
@@ -659,21 +690,33 @@ const ApiModule = {
             let modelsUrl, headers;
             let models = [];
             
+            console.log('🔄 开始获取模型列表:', { provider, endpoint });
+            
             // 根据提供商设置请求参数
             switch (provider) {
                 case 'openai':
-                    modelsUrl = endpoint ? `${endpoint.replace(/\/chat\/completions$/, '')}/models` : 'https://api.openai.com/v1/models';
+                    modelsUrl = endpoint || 'https://api.openai.com/v1/models';
+                    // 移除chat/completions部分
+                    if (modelsUrl.includes('/chat/completions')) {
+                        modelsUrl = modelsUrl.replace('/chat/completions', '/models');
+                    }
                     headers = Utils.getApiHeaders(apiKey, provider);
+                    console.log('OpenAI请求URL:', modelsUrl);
                     break;
                     
                 case 'anthropic':
                     modelsUrl = endpoint || 'https://api.anthropic.com/v1/models';
+                    if (modelsUrl.includes('/messages')) {
+                        modelsUrl = modelsUrl.replace('/messages', '/models');
+                    }
                     headers = Utils.getApiHeaders(apiKey, provider);
+                    console.log('Anthropic请求URL:', modelsUrl);
                     break;
                     
                 case 'google':
                     modelsUrl = endpoint || 'https://generativelanguage.googleapis.com/v1beta/models';
                     headers = Utils.getApiHeaders(apiKey, provider);
+                    console.log('Google请求URL:', modelsUrl);
                     break;
                     
                 case 'custom':
@@ -682,6 +725,7 @@ const ApiModule = {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${apiKey}`
                     };
+                    console.log('自定义API请求URL:', modelsUrl);
                     break;
                     
                 default:
@@ -693,58 +737,110 @@ const ApiModule = {
             }
             
             // 发送获取模型请求
+            console.log('🔄 发送模型列表请求...');
             const response = await Utils.sendApiRequest(modelsUrl, {
                 method: 'GET',
                 headers: headers
             });
             
+            console.log('✅ 模型列表响应:', response);
+            
             // 解析响应数据，提取模型列表
             if (provider === 'openai') {
-                // OpenAI格式
-                models = response.data
-                    .filter(model => model.id.includes('gpt') || model.id.includes('text'))
-                    .map(model => ({
+                // OpenAI格式：response.data 是数组
+                if (response.data && Array.isArray(response.data)) {
+                    models = response.data
+                        .filter(model => model.id.includes('gpt') || model.id.includes('text'))
+                        .map(model => ({
+                            id: model.id,
+                            name: model.id,
+                            description: `OpenAI模型 (创建时间: ${new Date(model.created * 1000).toLocaleDateString()})`,
+                            provider: 'openai'
+                        }));
+                } else if (Array.isArray(response)) {
+                    // 有些API可能直接返回数组
+                    models = response
+                        .filter(model => model.id && (model.id.includes('gpt') || model.id.includes('text')))
+                        .map(model => ({
+                            id: model.id,
+                            name: model.id,
+                            description: model.description || `OpenAI模型`,
+                            provider: 'openai'
+                        }));
+                } else {
+                    throw new Error('无法解析OpenAI模型列表响应');
+                }
+            } else if (provider === 'anthropic') {
+                // Anthropic格式：response.data 是数组
+                if (response.data && Array.isArray(response.data)) {
+                    models = response.data.map(model => ({
                         id: model.id,
                         name: model.id,
-                        description: `OpenAI模型 (创建时间: ${new Date(model.created * 1000).toLocaleDateString()})`,
-                        provider: 'openai'
+                        description: model.description || 'Anthropic Claude模型',
+                        provider: 'anthropic'
                     }));
-            } else if (provider === 'anthropic') {
-                // Anthropic格式
-                models = response.data.map(model => ({
-                    id: model.id,
-                    name: model.id,
-                    description: 'Anthropic Claude模型',
-                    provider: 'anthropic'
-                }));
-            } else if (provider === 'google') {
-                // Google格式
-                models = response.models
-                    .filter(model => model.name.includes('models/gemini'))
-                    .map(model => ({
-                        id: model.name.replace('models/', ''),
-                        name: model.name.replace('models/', ''),
-                        description: 'Google Gemini模型',
-                        provider: 'google'
-                    }));
-            } else if (provider === 'custom') {
-                // 自定义API，尝试解析响应
-                if (Array.isArray(response)) {
-                    models = response.map(item => ({
-                        id: item.id || item.name || item.model,
-                        name: item.name || item.id || item.model,
-                        description: item.description || '自定义API模型',
-                        provider: 'custom'
-                    }));
-                } else if (response.data && Array.isArray(response.data)) {
-                    models = response.data.map(item => ({
-                        id: item.id || item.name || item.model,
-                        name: item.name || item.id || item.model,
-                        description: item.description || '自定义API模型',
-                        provider: 'custom'
+                } else if (response.models && Array.isArray(response.models)) {
+                    // 备用格式
+                    models = response.models.map(model => ({
+                        id: model.id,
+                        name: model.id,
+                        description: model.description || 'Anthropic Claude模型',
+                        provider: 'anthropic'
                     }));
                 } else {
-                    // 如果无法解析，使用默认模型
+                    throw new Error('无法解析Anthropic模型列表响应');
+                }
+            } else if (provider === 'google') {
+                // Google格式：response.models 是数组
+                if (response.models && Array.isArray(response.models)) {
+                    models = response.models
+                        .filter(model => model.name && model.name.includes('models/gemini'))
+                        .map(model => ({
+                            id: model.name.replace('models/', ''),
+                            name: model.displayName || model.name.replace('models/', ''),
+                            description: model.description || 'Google Gemini模型',
+                            provider: 'google'
+                        }));
+                } else {
+                    throw new Error('无法解析Google模型列表响应');
+                }
+            } else if (provider === 'custom') {
+                // 自定义API，尝试多种可能的响应格式
+                console.log('自定义API响应格式:', response);
+                
+                if (Array.isArray(response)) {
+                    // 直接是数组
+                    models = response
+                        .filter(item => item.id || item.name || item.model)
+                        .map(item => ({
+                            id: item.id || item.name || item.model,
+                            name: item.name || item.id || item.model,
+                            description: item.description || '自定义API模型',
+                            provider: 'custom'
+                        }));
+                } else if (response.data && Array.isArray(response.data)) {
+                    // 包含data字段的数组
+                    models = response.data
+                        .filter(item => item.id || item.name || item.model)
+                        .map(item => ({
+                            id: item.id || item.name || item.model,
+                            name: item.name || item.id || item.model,
+                            description: item.description || '自定义API模型',
+                            provider: 'custom'
+                        }));
+                } else if (response.models && Array.isArray(response.models)) {
+                    // 包含models字段的数组
+                    models = response.models
+                        .filter(item => item.id || item.name || item.model)
+                        .map(item => ({
+                            id: item.id || item.name || item.model,
+                            name: item.name || item.id || item.model,
+                            description: item.description || '自定义API模型',
+                            provider: 'custom'
+                        }));
+                } else {
+                    // 如果无法解析，提供默认模型
+                    console.warn('无法解析自定义API响应，使用默认模型');
                     models = [{
                         id: 'custom-model',
                         name: '自定义模型',
@@ -753,6 +849,8 @@ const ApiModule = {
                     }];
                 }
             }
+            
+            console.log(`✅ 成功解析 ${models.length} 个模型`);
             
             // 保存模型列表
             const availableModels = Storage.getAvailableModels();
@@ -793,6 +891,8 @@ const ApiModule = {
             let headers = Utils.getApiHeaders(apiKey, provider);
             let body = {};
             
+            console.log('🔄 发送聊天请求:', { provider, modelId, messagesCount: messages.length });
+            
             // 根据提供商设置请求体
             switch (provider) {
                 case 'openai':
@@ -831,7 +931,13 @@ const ApiModule = {
                         parts: [{ text: msg.content }]
                     }));
                     
-                    requestUrl = `${endpoint}/${modelId || 'gemini-pro'}:generateContent`;
+                    // 构造正确的Google API URL
+                    if (modelId) {
+                        requestUrl = endpoint.replace(/models$/, `models/${modelId}:generateContent`);
+                    } else {
+                        requestUrl = endpoint.replace(/models$/, `models/gemini-pro:generateContent`);
+                    }
+                    
                     body = {
                         contents: googleMessages,
                         generationConfig: {
@@ -853,12 +959,16 @@ const ApiModule = {
                     break;
             }
             
+            console.log('📤 请求体:', body);
+            
             // 发送请求
             const response = await Utils.sendApiRequest(requestUrl, {
                 method: 'POST',
                 headers: headers,
                 body: JSON.stringify(body)
             });
+            
+            console.log('📥 响应:', response);
             
             // 解析响应
             let content = '';
@@ -875,10 +985,12 @@ const ApiModule = {
                          response.content || 
                          response.text || 
                          response.result || 
+                         response.message?.content ||
                          JSON.stringify(response);
             }
             
             if (!content) {
+                console.error('API返回空响应:', response);
                 throw new Error('API返回空响应');
             }
             

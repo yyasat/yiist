@@ -180,6 +180,25 @@ const DevTools = {
         // 设置置顶联系人
         localStorage.setItem('pinned_contacts', JSON.stringify(['contact_1']));
         
+        // 设置API测试配置
+        localStorage.setItem('custom_api_configs', JSON.stringify({
+            openai: {
+                enabled: true,
+                apiKey: '',
+                endpoint: 'https://api.openai.com/v1/chat/completions'
+            },
+            anthropic: {
+                enabled: false,
+                apiKey: '',
+                endpoint: 'https://api.anthropic.com/v1/messages'
+            },
+            google: {
+                enabled: false,
+                apiKey: '',
+                endpoint: 'https://generativelanguage.googleapis.com/v1beta/models'
+            }
+        }));
+        
         // 显示成功消息
         const toast = document.createElement('div');
         toast.style.cssText = `
@@ -276,6 +295,149 @@ const DevTools = {
         input.click();
     },
     
+    // API测试功能
+    testAPIConnection() {
+        console.log('🔌 测试API连接...');
+        
+        const apiKey = prompt('请输入OpenAI API密钥：');
+        if (!apiKey) {
+            console.log('❌ 未输入API密钥');
+            return;
+        }
+        
+        const config = {
+            provider: 'openai',
+            apiKey: apiKey,
+            endpoint: 'https://api.openai.com/v1/chat/completions'
+        };
+        
+        const loader = UI.createLoader('测试API连接中...');
+        
+        // 测试API连接
+        ApiModule.testApiConnection(config).then(result => {
+            UI.removeLoader(loader);
+            
+            if (result.success) {
+                alert('✅ API连接测试成功！\n\n可以获取模型列表了。');
+                console.log('✅ API连接测试成功:', result.data);
+                
+                // 保存配置
+                ApiModule.saveApiConfig({
+                    openai: {
+                        enabled: true,
+                        apiKey: apiKey,
+                        endpoint: config.endpoint
+                    }
+                });
+                
+                // 询问是否获取模型列表
+                if (confirm('API连接成功！是否现在获取模型列表？')) {
+                    this.fetchModels();
+                }
+            } else {
+                alert(`❌ API连接测试失败：\n${result.message}`);
+                console.error('❌ API连接测试失败:', result.error);
+            }
+        }).catch(error => {
+            UI.removeLoader(loader);
+            alert(`❌ API连接测试失败：\n${error.message}`);
+            console.error('❌ API连接测试失败:', error);
+        });
+    },
+    
+    // 获取模型列表
+    fetchModels() {
+        console.log('📋 获取模型列表...');
+        
+        const configs = Storage.getCustomApiConfigs();
+        const openaiConfig = configs.openai;
+        
+        if (!openaiConfig || !openaiConfig.apiKey) {
+            alert('请先配置OpenAI API密钥');
+            return;
+        }
+        
+        const config = {
+            provider: 'openai',
+            apiKey: openaiConfig.apiKey,
+            endpoint: openaiConfig.endpoint
+        };
+        
+        const loader = UI.createLoader('获取模型列表中...');
+        
+        ApiModule.fetchAvailableModels(config).then(result => {
+            UI.removeLoader(loader);
+            
+            if (result.success) {
+                alert(`✅ 获取模型列表成功！\n\n共获取到 ${result.count} 个模型。\n\n现在可以在API配置界面中看到这些模型了。`);
+                console.log('✅ 获取模型列表成功:', result.models);
+                
+                // 打开API配置界面显示模型
+                setTimeout(() => {
+                    ApiModule.openApiConfig();
+                }, 500);
+            } else {
+                alert(`❌ 获取模型列表失败：\n${result.message}`);
+                console.error('❌ 获取模型列表失败:', result.error);
+            }
+        }).catch(error => {
+            UI.removeLoader(loader);
+            alert(`❌ 获取模型列表失败：\n${error.message}`);
+            console.error('❌ 获取模型列表失败:', error);
+        });
+    },
+    
+    // 快速API聊天测试
+    quickAPIChatTest() {
+        console.log('💬 快速API聊天测试...');
+        
+        const configs = Storage.getCustomApiConfigs();
+        const openaiConfig = configs.openai;
+        
+        if (!openaiConfig || !openaiConfig.apiKey) {
+            alert('请先配置OpenAI API密钥');
+            return;
+        }
+        
+        const message = prompt('请输入测试消息：', '你好，请介绍一下你自己');
+        if (!message) return;
+        
+        const config = {
+            provider: 'openai',
+            apiKey: openaiConfig.apiKey,
+            endpoint: openaiConfig.endpoint
+        };
+        
+        const messages = [
+            {
+                role: 'system',
+                content: '你是一个有帮助的AI助手。'
+            },
+            {
+                role: 'user',
+                content: message
+            }
+        ];
+        
+        const loader = UI.createLoader('发送聊天消息中...');
+        
+        ApiModule.sendChatMessage(config, messages).then(result => {
+            UI.removeLoader(loader);
+            
+            if (result.success) {
+                alert(`✅ API聊天测试成功！\n\nAI回复：\n${result.content.substring(0, 500)}${result.content.length > 500 ? '...' : ''}`);
+                console.log('✅ API聊天测试成功:', result.content.substring(0, 200));
+            } else {
+                alert(`❌ API聊天测试失败：\n${result.error}`);
+                console.error('❌ API聊天测试失败:', result.error);
+            }
+        }).catch(error => {
+            UI.removeLoader(loader);
+            alert(`❌ API聊天测试失败：\n${error.message}`);
+            console.error('❌ API聊天测试失败:', error);
+        });
+    },
+    
     // 性能监控
     startPerformanceMonitor() {
         console.log('🎯 性能监控启动');
@@ -334,10 +496,12 @@ const DevTools = {
         console.log('2. Utils - 工具函数');
         console.log('3. Storage - 数据存储');
         console.log('4. UI - 界面组件');
-        console.log('5. ChatModule - 聊天功能');
-        console.log('6. MomentsModule - 动态功能');
-        console.log('7. ProfileModule - 个人功能');
-        console.log('8. App - 主控制器');
+        console.log('5. ApiModule - API模块');
+        console.log('6. ChatModule - 聊天功能');
+        console.log('7. MomentsModule - 动态功能');
+        console.log('8. ProfileModule - 个人功能');
+        console.log('9. BackupModule - 备份功能');
+        console.log('10. App - 主控制器');
         console.log('=======================');
         console.log('💡 提示：在编辑器中搜索这些模块名快速定位');
     },
@@ -350,6 +514,9 @@ const DevTools = {
             '聊天记录总数': Object.values(JSON.parse(localStorage.getItem('chat_histories') || '{}'))
                 .reduce((total, history) => total + history.length, 0),
             '用户信息': localStorage.getItem('user_info') ? '已设置' : '未设置',
+            'API配置': localStorage.getItem('custom_api_configs') ? '已配置' : '未配置',
+            '可用模型': Object.values(JSON.parse(localStorage.getItem('available_models') || '{}'))
+                .reduce((total, models) => total + models.length, 0),
             '存储占用': `${(JSON.stringify(localStorage).length / 1024).toFixed(2)} KB`
         };
         
@@ -366,7 +533,7 @@ const DevTools = {
         console.log('🔧 运行快速测试...');
         
         // 测试1: 检查核心模块
-        const modules = ['Config', 'Utils', 'Storage', 'ChatModule', 'MomentsModule', 'ProfileModule', 'App'];
+        const modules = ['Config', 'Utils', 'Storage', 'ApiModule', 'ChatModule', 'MomentsModule', 'ProfileModule', 'BackupModule', 'App'];
         modules.forEach(module => {
             if (window[module]) {
                 console.log(`✅ ${module} 模块加载正常`);
@@ -392,6 +559,13 @@ const DevTools = {
             console.error('❌ style.css 未加载');
         }
         
+        // 测试4: 检查API模块功能
+        if (window.ApiModule && typeof ApiModule.testApiConnection === 'function') {
+            console.log('✅ API模块功能正常');
+        } else {
+            console.error('❌ API模块功能异常');
+        }
+        
         console.log('✅ 快速测试完成');
     }
 };
@@ -407,12 +581,27 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     console.log('  DevTools.generateTestData() - 生成测试数据');
     console.log('  DevTools.exportAllData() - 导出数据备份');
     console.log('  DevTools.importData() - 导入数据');
+    console.log('  DevTools.testAPIConnection() - 测试API连接');
+    console.log('  DevTools.fetchModels() - 获取模型列表');
+    console.log('  DevTools.quickAPIChatTest() - 快速API聊天测试');
     console.log('  DevTools.showCodeStructure() - 显示代码结构');
     console.log('  DevTools.showDataStats() - 显示数据统计');
     console.log('  DevTools.quickTest() - 快速测试');
     
-    // 自动显示开发面板（开发环境）
-    setTimeout(() => {
-        document.getElementById('devToolsPanel').classList.add('show');
-    }, 1000);
+    // 添加API测试按钮到开发工具面板
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+            const devToolsPanel = document.getElementById('devToolsPanel');
+            if (devToolsPanel) {
+                const apiTestBtn = document.createElement('button');
+                apiTestBtn.className = 'dev-tools-btn';
+                apiTestBtn.textContent = 'API测试';
+                apiTestBtn.onclick = () => DevTools.testAPIConnection();
+                devToolsPanel.insertBefore(apiTestBtn, devToolsPanel.firstChild);
+                
+                // 自动显示开发面板（开发环境）
+                devToolsPanel.classList.add('show');
+            }
+        }, 1000);
+    });
 }
